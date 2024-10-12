@@ -1,20 +1,44 @@
 # Lifelong
+
 Our app Lifelong is an AI-based application that finds a true lifelong penpal for a user that he/she can share a deep connection with.
 
 ## Team Members
+
 -Jae Kang - Frontend Lead  
 -Ayman Shahriar - Backend Lead  
 -Harmandeep Singh - LLM Integration Lead  
 -Xin Wang - Database Lead  
 -Jinyu Wang – Scrum Master & Testing Lead
 
-
 ## Installation
+
 Instructions on how to install and run the project.
 
+### Using Virtual Environment
 
+1. Clone the repository:
+
+   ```bash
+   git clone https://github.com/your-username/Lifelong.git
+   cd Lifelong
+
+   ```
+
+2. Create a virtual environment:
+   python3 -m venv venv
+
+3. Activate the virtual environment:
+   On Linux/Mac:
+   source venv/bin/activate
+
+   On Windows
+   .\venv\Scripts\activate
+
+4. Install the dependencies:
+   pip install -r requirements.txt
 
 ## Contributing
+
 We welcome contributions. To contribute to this project, please follow these guidelines:
 
 1. Clone the repository.
@@ -25,6 +49,7 @@ We welcome contributions. To contribute to this project, please follow these gui
 6. Open a pull request to the `main` branch of the original repository.
 
 ### Pull Request Guidelines
+
 - Ensure your code follows the project's coding standards.
 - Include relevant tests for your changes.
 - Describe your changes in detail in the pull request description.
