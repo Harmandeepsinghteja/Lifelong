@@ -56,7 +56,7 @@ Instructions on how to install and run the project.
     ```bash
     npm start
     ```
-    
+
 ## Contributing
 
 We welcome contributions. To contribute to this project, please follow these guidelines:
@@ -74,5 +74,11 @@ We welcome contributions. To contribute to this project, please follow these gui
 - Include relevant tests for your changes.
 - Describe your changes in detail in the pull request description.
 - Your pull request will need to be reviewed and approved by at least one other team member before it can be merged.
+
+### Branch Protection Rules
+
+- Direct updates to the `main` branch are not allowed.
+- All changes must go through a pull request and be reviewed before merging.
+
 
 Thank you for contributing!
