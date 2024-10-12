@@ -25,25 +25,38 @@ Instructions on how to install and run the project.
    ```
 
 2. Create a virtual environment:
-   python3 -m venv venv
+   ```bash
+    python3 -m venv venv
+    ```
 
 3. Activate the virtual environment:
    On Linux/Mac:
+   ```bash
    source venv/bin/activate
+    ```
 
    On Windows
+   ```bash
    .\venv\Scripts\activate
+    ```
 
 4. Install the nodejs and npm
     Verify the installation:
+    ```bash
         node -v
         npm -v
+    ```
 
 5.  Install the dependencies
+    ```bash
     npm install
+    ```
 
 6. Start the application:
+    ```bash
     npm start
+    ```
+    
 ## Contributing
 
 We welcome contributions. To contribute to this project, please follow these guidelines:
