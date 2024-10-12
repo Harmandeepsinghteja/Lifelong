@@ -34,9 +34,16 @@ Instructions on how to install and run the project.
    On Windows
    .\venv\Scripts\activate
 
-4. Install the dependencies:
-   pip install -r requirements.txt
+4. Install the nodejs and npm
+    Verify the installation:
+        node -v
+        npm -v
 
+5.  Install the dependencies
+    npm install
+
+6. Start the application:
+    npm start
 ## Contributing
 
 We welcome contributions. To contribute to this project, please follow these guidelines:

@@ -1,0 +1,24 @@
+{
+  "name": "lifelong",
+  "version": "1.0.0",
+  "description": "Our app Lifelong is an AI-based application that finds a true lifelong penpal for a user that he/she can share a deep connection with.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Harmandeepsinghteja/Lifelong.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Harmandeepsinghteja/Lifelong/issues"
+  },
+  "homepage": "https://github.com/Harmandeepsinghteja/Lifelong#readme",
+  "dependencies": {
+    "express": "^4.21.1"
+  }
+}
