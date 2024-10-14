@@ -1,0 +1,124 @@
+{
+  "messages": [
+    {
+      "id": 1,
+      "sender": "other",
+      "text": "Hey there!",
+      "timestamp": "2024-10-09T17:05:00Z"
+    },
+    {
+      "id": 2,
+      "sender": "user",
+      "text": "Hi! How are you?",
+      "timestamp": "2024-10-09T17:10:00Z"
+    },
+    {
+      "id": 3,
+      "sender": "other",
+      "text": "I'm doing great, thanks for asking. How about you?",
+      "timestamp": "2024-10-09T17:15:00Z"
+    },
+    {
+      "id": 4,
+      "sender": "user",
+      "text": "I'm good too. Just working on some projects.",
+      "timestamp": "2024-10-09T17:20:00Z"
+    },
+    {
+      "id": 5,
+      "sender": "other",
+      "text": "That's awesome. What projects are you working on?",
+      "timestamp": "2024-10-09T17:25:00Z"
+    },
+    {
+      "id": 6,
+      "sender": "user",
+      "text": "A few different things, mostly web development.",
+      "timestamp": "2024-10-09T17:30:00Z"
+    },
+    {
+      "id": 7,
+      "sender": "other",
+      "text": "Nice! I love web development. Do you have a favorite framework?",
+      "timestamp": "2024-10-09T17:35:00Z"
+    },
+    {
+      "id": 8,
+      "sender": "user",
+      "text": "I'm really into React at the moment. You?",
+      "timestamp": "2024-10-09T17:40:00Z"
+    },
+    {
+      "id": 9,
+      "sender": "other",
+      "text": "React is great! I'm also a fan of Vue.js.",
+      "timestamp": "2024-10-09T17:45:00Z"
+    },
+    {
+      "id": 10,
+      "sender": "user",
+      "text": "Vue.js is pretty cool too. Have you tried Angular?",
+      "timestamp": "2024-10-09T17:50:00Z"
+    },
+    {
+      "id": 11,
+      "sender": "other",
+      "text": "Yes, but I found it a bit more complex. Still, it's very powerful.",
+      "timestamp": "2024-10-09T17:55:00Z"
+    },
+    {
+      "id": 12,
+      "sender": "user",
+      "text": "Agreed. I guess it depends on the project requirements.",
+      "timestamp": "2024-10-09T18:00:00Z"
+    },
+    {
+      "id": 13,
+      "sender": "other",
+      "text": "Absolutely. What's your favorite part about web development?",
+      "timestamp": "2024-10-09T18:05:00Z"
+    },
+    {
+      "id": 14,
+      "sender": "user",
+      "text": "I love the creativity and problem-solving aspects. What about you?",
+      "timestamp": "2024-10-09T18:10:00Z"
+    },
+    {
+      "id": 15,
+      "sender": "other",
+      "text": "Same here. It's rewarding to build something functional and visually appealing.",
+      "timestamp": "2024-10-09T18:15:00Z"
+    },
+    {
+      "id": 16,
+      "sender": "user",
+      "text": "Totally. Do you work on personal projects or professionally?",
+      "timestamp": "2024-10-09T18:20:00Z"
+    },
+    {
+      "id": 17,
+      "sender": "other",
+      "text": "A bit of both. How about you?",
+      "timestamp": "2024-10-09T18:25:00Z"
+    },
+    {
+      "id": 18,
+      "sender": "user",
+      "text": "Mostly personal projects, but I'm looking to go professional.",
+      "timestamp": "2024-10-09T18:30:00Z"
+    },
+    {
+      "id": 19,
+      "sender": "other",
+      "text": "That's fantastic! Any specific goals in mind?",
+      "timestamp": "2024-10-09T18:35:00Z"
+    },
+    {
+      "id": 20,
+      "sender": "user",
+      "text": "Just to keep learning and improving. Maybe start freelancing soon.",
+      "timestamp": "2024-10-09T18:40:00Z"
+    }
+  ]
+}

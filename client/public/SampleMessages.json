@@ -1,0 +1,28 @@
+{
+  "messages": [
+    {
+      "id": 1,
+      "sender": "other",
+      "text": "Hey there!",
+      "timestamp": "2024-10-09T17:05:00Z"
+    },
+    {
+      "id": 2,
+      "sender": "user",
+      "text": "Hi! How are you?",
+      "timestamp": "2024-10-09T17:10:00Z"
+    },
+    {
+      "id": 3,
+      "sender": "other",
+      "text": "Im doing great, thanks for asking. How about you?",
+      "timestamp": "2024-10-09T17:15:00Z"
+    },
+    {
+      "id": 4,
+      "sender": "user",
+      "text": "Im good too. Just working on some projects.",
+      "timestamp": "2024-10-09T17:20:00Z"
+    }
+  ]
+}
