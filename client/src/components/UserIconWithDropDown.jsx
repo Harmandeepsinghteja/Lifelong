@@ -9,11 +9,22 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { User, Settings, LogOut } from "lucide-react";
+import { useSharedState } from "../MyContext";
 
 export default function UserIconDropdown({ username, email }) {
+  const { isLoggedIn, setIsLoggedIn } = useSharedState();
   const [isOpen, setIsOpen] = useState(false);
 
   const firstInitial = username.charAt(0).toUpperCase();
+
+  const handleLogout = () => {
+    if (!isLoggedIn) {
+      alert("You are alredy logged out!");
+    } else {
+      localStorage.removeItem("token");
+      window.location.reload(true); // Refreshes the current page, same as clicking the refresh button in your browser
+    }
+  };
 
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
@@ -46,7 +57,7 @@ export default function UserIconDropdown({ username, email }) {
         <DropdownMenuSeparator className="bg-zinc-700" />
         <DropdownMenuItem className="focus:bg-zinc-700 focus:text-zinc-100">
           <LogOut className="mr-2 h-4 w-4" />
-          <span>Log out</span>
+          <span onClick={handleLogout}>Log out</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
