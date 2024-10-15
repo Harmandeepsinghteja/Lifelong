@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useNavigate } from "react-router-dom";
+import { useSharedState } from "../MyContext";
 import {
   Card,
   CardContent,
@@ -14,9 +16,12 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 
 export default function LoginForm() {
+  const { isLoggedIn, setIsLoggedIn } = useSharedState();
+
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -29,8 +34,32 @@ export default function LoginForm() {
 
     // Here you would typically call your authentication function
     console.log("Login attempt with:", { username, password });
-    // For demo purposes, let's simulate a failed login
-    setError("Invalid username or password. Please try again.");
+
+    var responseStatus;
+    fetch("http://localhost:3000/login", {
+      method: "post",
+      body: JSON.stringify({ username: username, password: password }),
+      headers: { "Content-Type": "application/json" }, // Content-Type is in quotes because it has a '-'
+    })
+      .then((response) => {
+        responseStatus = response.status;
+        return response.json();
+      })
+      .then((responsePayload) => {
+        if (responseStatus === 200) {
+          // Store the token in a cookie/local storage
+          localStorage.setItem("token", responsePayload.token);
+          setIsLoggedIn(true);
+          // alert("Login success!");
+          navigate("/");
+        } else {
+          alert(responsePayload);
+        }
+      })
+      .catch((err) => {
+        setIsLoggedIn(false);
+        console.log(err);
+      });
   };
 
   return (

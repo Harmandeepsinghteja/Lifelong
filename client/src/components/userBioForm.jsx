@@ -3,7 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import RadioGroupInput from "./radio-group-input";
+import TextInput from "./text-input";
+import TextareaInput from "./textarea-input";
 import {
   Card,
   CardContent,
@@ -14,15 +16,20 @@ import {
 } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
+import SelectInput from "./select-input";
+import { countries } from "../countries.js";
 
 export default function UserBioForm() {
-  const [name, setName] = useState("");
   const [age, setAge] = useState("");
   const [occupation, setOccupation] = useState("");
   const [gender, setGender] = useState("");
-  const [relationshipStatus, setRelationshipStatus] = useState("");
+  const [ethnicity, setEthnicity] = useState("");
+  const [country, setCountry] = useState("");
+  const [homeCountry, setHomeCountry] = useState("");
+  const [maritalStatus, setMaritalStatus] = useState("");
+  const [exchangeType, setExchangeType] = useState("");
+  const [messageFrequency, setMessageFrequency] = useState("");
   const [bio, setBio] = useState("");
-  const [hobbies, setHobbies] = useState("");
   const [error, setError] = useState("");
 
   const handleSubmit = (e) => {
@@ -30,33 +37,35 @@ export default function UserBioForm() {
     setError("");
 
     if (
-      !name ||
-      !age ||
-      !occupation ||
       !gender ||
-      !relationshipStatus ||
-      !bio
+      !ethnicity ||
+      !country ||
+      !homeCountry ||
+      !maritalStatus ||
+      !exchangeType ||
+      !messageFrequency
     ) {
       setError("Please fill in all required fields.");
       return;
     }
 
-    // Here you would typically call your submit function
     console.log("Bio submitted:", {
-      name,
       age,
       occupation,
       gender,
-      relationshipStatus,
+      ethnicity,
+      currentCity: country,
+      hometown: homeCountry,
+      maritalStatus,
+      exchangeType,
+      messageFrequency,
       bio,
-      hobbies,
     });
-    // For demo purposes, let's simulate a successful submission
-    alert("Bio submitted successfully!");
+    alert("Submitted successfully!");
   };
 
   return (
-    <div className="flex flex-rows items-center justify-center bg-zinc-950 p-4 xl:p-10 md:w-4/5 ">
+    <div className=" flex flex-rows  items-center justify-center bg-zinc-950 p-4 xl:p-10 md:w-4/5 ">
       <Card className="w-full  bg-zinc-800 text-zinc-100">
         <CardHeader>
           <CardTitle className="text-2xl font-bold">User Bio</CardTitle>
@@ -65,164 +74,99 @@ export default function UserBioForm() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="name" className="text-zinc-100">
-                Name
-              </Label>
-              <Input
-                id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-                className="bg-zinc-700 text-zinc-100 border-zinc-600 focus:border-zinc-500"
-              />
-            </div>
+          <form
+            onSubmit={handleSubmit}
+            className="space-y-6 flex flex-col gap-3"
+          >
+            <TextInput
+              id="age"
+              label="How old are you?"
+              value={age}
+              onChange={setAge}
+              required
+              type="number"
+            />
+            <TextInput
+              id="occupation"
+              label="What do you do for living?"
+              value={occupation}
+              onChange={setOccupation}
+              required
+            />
+            <RadioGroupInput
+              label="What is your gender?"
+              options={["Man", "Woman", "Nonbinary", "Prefer not to say"]}
+              value={gender}
+              onChange={setGender}
+              required
+            />
 
-            <div className="space-y-2">
-              <Label htmlFor="age" className="text-zinc-100">
-                Age
-              </Label>
-              <Input
-                id="age"
-                type="number"
-                value={age}
-                onChange={(e) => setAge(e.target.value)}
-                required
-                className="bg-zinc-700 text-zinc-100 border-zinc-600 focus:border-zinc-500"
-              />
-            </div>
+            <RadioGroupInput
+              label="What is your ethnicity?"
+              options={[
+                "African",
+                "Asian",
+                "European",
+                "Indigenous Peoples",
+                "Latino/Hispanic",
+                "Prefer not to say",
+              ]}
+              value={ethnicity}
+              onChange={setEthnicity}
+              required
+            />
 
-            <div className="space-y-2">
-              <Label htmlFor="occupation" className="text-zinc-100">
-                Occupation
-              </Label>
-              <Input
-                id="occupation"
-                value={occupation}
-                onChange={(e) => setOccupation(e.target.value)}
-                required
-                className="bg-zinc-700 text-zinc-100 border-zinc-600 focus:border-zinc-500"
-              />
-            </div>
+            <SelectInput
+              id="Country"
+              label="Where do you live now?"
+              options={countries}
+              value={country}
+              onChange={setCountry}
+              required
+            />
 
-            <div className="space-y-2">
-              <Label className="text-zinc-100">Gender</Label>
-              <RadioGroup
-                value={gender}
-                onValueChange={setGender}
-                required
-                className="flex space-x-4"
-              >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem
-                    value="male"
-                    id="male"
-                    className="border-zinc-500"
-                  />
-                  <Label htmlFor="male" className="text-zinc-100">
-                    Male
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem
-                    value="female"
-                    id="female"
-                    className="border-zinc-500"
-                  />
-                  <Label htmlFor="female" className="text-zinc-100">
-                    Female
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem
-                    value="other"
-                    id="other"
-                    className="border-zinc-500"
-                  />
-                  <Label htmlFor="other" className="text-zinc-100">
-                    Other
-                  </Label>
-                </div>
-              </RadioGroup>
-            </div>
+            <SelectInput
+              id="homeCountry"
+              label="Where was your home country?"
+              options={countries}
+              value={homeCountry}
+              onChange={setHomeCountry}
+              required
+            />
 
-            <div className="space-y-2">
-              <Label className="text-zinc-100">Relationship Status</Label>
-              <RadioGroup
-                value={relationshipStatus}
-                onValueChange={setRelationshipStatus}
-                required
-              >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem
-                    value="single"
-                    id="single"
-                    className="border-zinc-500"
-                  />
-                  <Label htmlFor="single" className="text-zinc-100">
-                    Single
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem
-                    value="in-relationship"
-                    id="in-relationship"
-                    className="border-zinc-500"
-                  />
-                  <Label htmlFor="in-relationship" className="text-zinc-100">
-                    In a Relationship
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem
-                    value="married"
-                    id="married"
-                    className="border-zinc-500"
-                  />
-                  <Label htmlFor="married" className="text-zinc-100">
-                    Married
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem
-                    value="complicated"
-                    id="complicated"
-                    className="border-zinc-500"
-                  />
-                  <Label htmlFor="complicated" className="text-zinc-100">
-                    It's Complicated
-                  </Label>
-                </div>
-              </RadioGroup>
-            </div>
+            <RadioGroupInput
+              label="Marital status:"
+              options={["Single", "Married", "Separated", "Prefer not to say"]}
+              value={maritalStatus}
+              onChange={setMaritalStatus}
+              required
+            />
 
-            <div className="space-y-2">
-              <Label htmlFor="bio" className="text-zinc-100">
-                Bio
-              </Label>
-              <Textarea
-                id="bio"
-                value={bio}
-                onChange={(e) => setBio(e.target.value)}
-                required
-                className="bg-zinc-700 text-zinc-100 border-zinc-600 focus:border-zinc-500 min-h-[100px]"
-                placeholder="Tell us about yourself..."
-              />
-            </div>
+            <RadioGroupInput
+              label="What kind of exchange are you looking for:"
+              options={["Casual Chat", "Letter"]}
+              value={exchangeType}
+              onChange={setExchangeType}
+              required
+            />
 
-            <div className="space-y-2">
-              <Label htmlFor="hobbies" className="text-zinc-100">
-                Hobbies (optional)
-              </Label>
-              <Textarea
-                id="hobbies"
-                value={hobbies}
-                onChange={(e) => setHobbies(e.target.value)}
-                className="bg-zinc-700 text-zinc-100 border-zinc-600 focus:border-zinc-500"
-                placeholder="What do you like to do in your free time?"
-              />
-            </div>
+            <RadioGroupInput
+              label="How often do you want to message:"
+              options={["Daily", "Weekly", "Monthly"]}
+              value={messageFrequency}
+              onChange={setMessageFrequency}
+              required
+            />
+
+            <TextareaInput
+              id="bio"
+              label="Tell us anything about yourself, that you want to share with your penpal."
+              helperText="Here are some ideas: Any favorite foods, movies, shows, books, or sports?  What are your hobbies?  Do you have any life goals?  Do you have any pets?"
+              value={bio}
+              onChange={setBio}
+              required
+              placeholder="Share your interests, hobbies, or anything you'd like your penpal to know..."
+            />
 
             {error && (
               <Alert
