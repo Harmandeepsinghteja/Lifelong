@@ -18,20 +18,20 @@ app.use(express.json());
 let messages = [
   {
     id: 1,
-    sender: "user",
-    text: "Hello there!",
+    sender: 1,
+    text: "I am the user!",
     timestamp: new Date().toISOString(),
   },
   {
     id: 2,
-    sender: "bot",
-    text: "Hi! How can I help you?",
+    sender: 2,
+    text: "I am the matched user!",
     timestamp: new Date().toISOString(),
   },
 ];
 
 // Endpoint to fetch initial messages
-app.get("/api/messages", (req, res) => {
+app.get("/messages", (req, res) => {
   res.json({ messages });
 });
 
@@ -71,7 +71,16 @@ app.post("/login", (req, res, next) => {
   }
 });
 
-app.get("/name", (req, res, next) => {
+app.post("/admin-login", (req, res, next) => {
+  const loginIsSuccessful = true;
+  if (loginIsSuccessful) {
+    // Generate the token and send it to the user
+    const adminToken = jwt.sign({ adminUsername: "admin" }, SECRET_KEY);
+    res.json({ adminToken: adminToken });
+  }
+});
+
+app.get("/user-meta-data", (req, res, next) => {
   const token = req.headers.token;
   jwt.verify(token, SECRET_KEY, (err, decoded) => {
     if (err) {
@@ -79,11 +88,63 @@ app.get("/name", (req, res, next) => {
     } else {
       req.username = decoded.username;
       res.status(200).json({
-        key1: req.username,
-        key2: "value2",
+        username: req.username,
+        userID: 1,
+        bioComplete: true,
+        matchedUserID: 2,
+        matchedUsername: "",
       });
     }
   });
+});
+
+// Protected route to get user bio
+app.get("/bio", (req, res, next) => {
+  const token = req.headers.token;
+  jwt.verify(token, SECRET_KEY, (err, decoded) => {
+    if (err) {
+      res.status(401).json("Invalid token, cannot be decrypted");
+    } else {
+      const userBio = {
+        age: 28,
+        occupation: "Software Developer",
+        gender: "Nonbinary",
+        ethnicity: "Asian",
+        country: "Canada",
+        homeCountry: "India",
+        maritalStatus: "Single",
+        exchangeType: "Casual Chat",
+        messageFrequency: "Weekly",
+        bio: "I love coding, reading sci-fi novels, and hiking. Big foodie here!",
+      };
+      res.status(200).json(userBio);
+    }
+  });
+});
+
+app.get("/user-matches", (req, res) => {
+  const adminToken = req.headers.adminToken;
+  console.log(`Token from request headers: ${adminToken}`);
+  // jwt.verify(adminToken, SECRET_KEY, (err, decoded) => {
+  //   if (err) {
+  //     res.status(401).json("Invalid token, cannot be decrypted");
+  //   } else {
+  const userMatches = [
+    {
+      username: "User1",
+      matchedUsername: "UserA",
+      reason: "Shared Interests",
+    },
+    { username: "User2", matchedUsername: "UserB", reason: "Proximity" },
+    {
+      username: "User3",
+      matchedUsername: "UserC",
+      reason: "Mutual Friends",
+    },
+  ];
+  res.status(200).json(userMatches);
+  // }
+  // });
 });
 
 const PORT = process.env.PORT || 3000;

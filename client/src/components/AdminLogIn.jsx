@@ -1,8 +1,7 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useNavigate } from "react-router-dom";
 import { useSharedState } from "../MyContext";
 import {
   Card,
@@ -14,55 +13,54 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 
-export default function LoginForm() {
-  const { isLoggedIn, setIsLoggedIn } = useSharedState();
+export default function AdminLogIn() {
+  const { isAdminLoggedIn, setIsAdminLoggedIn } = useSharedState();
 
-  const [username, setUsername] = useState("");
+  const [adminUsername, setAdminUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
     setError("");
 
-    if (!username || !password) {
+    if (!adminUsername || !password) {
       setError("Please fill in all fields.");
       return;
     }
 
     // Here you would typically call your authentication function
-    console.log("Login attempt with:", { username, password });
+    console.log("Login attempt with:", { adminUsername, password });
 
     var responseStatus;
-    fetch("http://localhost:3000/login", {
+    fetch("http://localhost:3000/admin-login", {
       method: "post",
-      body: JSON.stringify({ username: username, password: password }),
-      headers: { "Content-Type": "application/json" }, // Content-Type is in quotes because it has a '-'
+      body: JSON.stringify({
+        adminUsername: adminUsername,
+        password: password,
+      }),
+      headers: { "Content-Type": "application/json" },
     })
       .then((response) => {
         responseStatus = response.status;
         return response.json();
       })
-      .then((responsePayload) => {
+      .then((data) => {
         if (responseStatus === 200) {
-          // Store the token in a cookie/local storage
-          localStorage.setItem("token", responsePayload.token);
-          setIsLoggedIn(true);
-          // alert("Login success!");
-          navigate("/");
+          localStorage.setItem("adminToken", data.adminToken);
+          setIsAdminLoggedIn(true);
         } else {
-          alert(responsePayload);
+          alert(data);
         }
       })
       .catch((err) => {
-        setIsLoggedIn(false);
+        setIsAdminLoggedIn(false);
         console.log(err);
       });
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto">
+    <Card className="w-full max-w-md mx-auto mt-20">
       <CardHeader>
         <CardTitle className="text-xl xl:text-4xl font-bold">Login</CardTitle>
         <CardDescription>
@@ -72,13 +70,13 @@ export default function LoginForm() {
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="username">Username</Label>
+            <Label htmlFor="adminUsername">Username</Label>
             <Input
-              id="username"
+              id="adminUsername"
               type="text"
-              placeholder="Enter your username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              placeholder="Enter Admin username"
+              value={adminUsername}
+              onChange={(e) => setAdminUsername(e.target.value)}
               required
             />
           </div>

@@ -1,20 +1,48 @@
 import React, { useEffect, useRef, useState } from "react";
 import io from "socket.io-client";
+import { useSharedState } from "../MyContext";
 
 const socket = io("http://localhost:3000");
 
 const MessageLog = () => {
+  const { isLoggedIn, setIsLoggedIn } = useSharedState();
+
   const [messages, setMessages] = useState([]);
+  const [userID, setUserID] = useState([]);
   const messagesEndRef = useRef(null);
+  const [error, setError] = useState("");
 
   useEffect(() => {
+    fetch("http://localhost:3000/user-meta-data", {
+      headers: {
+        token: localStorage.getItem("token"),
+      },
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        setIsLoggedIn(true);
+        setUserID(data.userID);
+      })
+      .catch((error) => {
+        setError("Error fetching data");
+        setIsLoggedIn(false);
+        console.log(error);
+      });
+
     socket.on("initialMessages", (initialMessages) => {
+      console.log("setting messages");
       setMessages(
         initialMessages.map((message) => ({
           ...message,
           timestamp: new Date(message.timestamp),
         }))
       );
+      console.log(messages);
       setTimeout(scrollToBottom, 1000); // Scroll to bottom on initial load with delay
     });
 
@@ -58,15 +86,15 @@ const MessageLog = () => {
       ) : (
         messages.map((message, index) => (
           <div
-            key={message.id}
+            key={index}
             ref={index === messages.length - 1 ? messagesEndRef : null} // Set ref to last message
             className={`flex ${
-              message.sender === "user" ? "justify-end" : "justify-start"
+              message.sender === userID ? "justify-end" : "justify-start"
             } mb-2 sm:mb-4`}
           >
             <div
               className={`max-w-[80%] sm:max-w-[70%] rounded-lg p-2 sm:p-3 ${
-                message.sender === "user" ? "bg-zinc-600" : "bg-zinc-800"
+                message.sender === userID ? "bg-zinc-600" : "bg-zinc-800"
               }`}
             >
               <p className="text-sm sm:text-base whitespace-pre-wrap break-words">
@@ -74,7 +102,7 @@ const MessageLog = () => {
               </p>
               <p
                 className={`text-xs sm:text-sm text-zinc-400 mt-1 ${
-                  message.sender === "user" ? "text-right" : "text-left"
+                  message.sender === userID ? "text-right" : "text-left"
                 }`}
               >
                 {formatTimestamp(message.timestamp)}
