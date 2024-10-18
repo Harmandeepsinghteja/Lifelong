@@ -1,8 +1,5 @@
-import React, { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import RadioGroupInput from "./radio-group-input";
 import TextInput from "./text-input";
 import TextareaInput from "./textarea-input";
@@ -10,7 +7,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -20,6 +16,7 @@ import SelectInput from "./select-input";
 import { countries } from "../countries.js";
 
 export default function UserBioForm() {
+  const [isBioComplete, setIsBioComplete] = useState(false);
   const [age, setAge] = useState("");
   const [occupation, setOccupation] = useState("");
   const [gender, setGender] = useState("");
@@ -31,6 +28,47 @@ export default function UserBioForm() {
   const [messageFrequency, setMessageFrequency] = useState("");
   const [bio, setBio] = useState("");
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const bioResponse = await fetch("http://localhost:3000/bio", {
+          headers: {
+            token: localStorage.getItem("token"),
+          },
+        });
+        const bioData = await bioResponse.json();
+        setAge(bioData.age || "");
+        setOccupation(bioData.occupation || "");
+        setGender(bioData.gender || "");
+        setEthnicity(bioData.ethnicity || "");
+        setCountry(bioData.country || "");
+        setHomeCountry(bioData.homeCountry || "");
+        setMaritalStatus(bioData.maritalStatus || "");
+        setExchangeType(bioData.exchangeType || "");
+        setMessageFrequency(bioData.messageFrequency || "");
+        setBio(bioData.bio || "");
+        console.log(bioData);
+
+        const metaDataResponse = await fetch(
+          "http://localhost:3000/user-meta-data",
+          {
+            headers: {
+              token: localStorage.getItem("token"),
+            },
+          }
+        );
+        const metaData = await metaDataResponse.json();
+        setIsBioComplete(true);
+        console.log(metaData);
+      } catch (error) {
+        setError("Error fetching data");
+        console.log(error);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -48,6 +86,18 @@ export default function UserBioForm() {
       setError("Please fill in all required fields.");
       return;
     }
+    const bioData = {
+      age,
+      occupation,
+      gender,
+      ethnicity,
+      country,
+      homeCountry,
+      maritalStatus,
+      exchangeType,
+      messageFrequency,
+      bio,
+    };
 
     console.log("Bio submitted:", {
       age,
@@ -62,13 +112,63 @@ export default function UserBioForm() {
       bio,
     });
     alert("Submitted successfully!");
+
+    if (isBioComplete) {
+      fetch("http://localhost:3000/bio", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify(bioData),
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error("Network response was not ok");
+          }
+          return response.json();
+        })
+        .then((data) => {
+          console.log("Bio updated:", data);
+          alert("Updated successfully!");
+        })
+        .catch((error) => {
+          setError("Error updating bio");
+          console.log(error);
+        });
+    } else {
+      fetch("http://localhost:3000/bio", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify(bioData),
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error("Network response was not ok");
+          }
+          return response.json();
+        })
+        .then((data) => {
+          console.log("Bio submitted:", data);
+          alert("Submitted successfully!");
+        })
+        .catch((error) => {
+          setError("Error submitting bio");
+          console.log(error);
+        });
+    }
   };
 
   return (
     <div className=" flex flex-rows  items-center justify-center bg-zinc-950 p-4 xl:p-10 md:w-4/5 ">
       <Card className="w-full  bg-zinc-800 text-zinc-100">
         <CardHeader>
-          <CardTitle className="text-2xl font-bold">User Bio</CardTitle>
+          <CardTitle className="text-2xl md:text-4xl font-bold">
+            Your Bio
+          </CardTitle>
           <CardDescription className="text-zinc-400">
             Tell us about yourself
           </CardDescription>
@@ -169,10 +269,7 @@ export default function UserBioForm() {
             />
 
             {error && (
-              <Alert
-                variant="destructive"
-                className="bg-red-900 border-red-800"
-              >
+              <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
