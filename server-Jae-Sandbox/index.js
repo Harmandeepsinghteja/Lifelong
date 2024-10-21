@@ -86,9 +86,8 @@ app.get("/user-meta-data", (req, res, next) => {
     if (err) {
       res.status(401).json("Invalid token, cannot be decrypted");
     } else {
-      req.username = decoded.username;
       res.status(200).json({
-        username: req.username,
+        username: decoded.username,
         userID: 1,
         bioComplete: true,
         matchedUserID: 2,
