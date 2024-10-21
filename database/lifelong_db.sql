@@ -9,3 +9,20 @@ CREATE TABLE users (
   password varchar(50) NOT NULL
 );
 
+DROP TABLE IF EXISTS bio;
+
+CREATE TABLE bio (
+	userId INT PRIMARY KEY,
+    age INT NOT NULL,
+    occupation VARCHAR(100) NOT NULL,
+    gender VARCHAR(100) NOT NULL,
+    ethnicity VARCHAR(100) NOT NULL,
+    country VARCHAR(100) NOT NULL,
+    homeCountry VARCHAR(100) NOT NULL,
+    maritalStatus VARCHAR(100) NOT NULL,
+    exchangeType VARCHAR(100) NOT NULL,
+    messageFrequency VARCHAR(100) NOT NULL,
+    bio VARCHAR(256) NOT NULL,
+    FOREIGN KEY (userId) REFERENCES users(id)
+);
+
