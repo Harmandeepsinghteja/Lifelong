@@ -6,7 +6,6 @@ import jwt from 'jsonwebtoken';
 const SECRET_KEY = 'secret';
 const bioAttributes = ['age', 'occupation','gender','ethnicity','country','homeCountry','maritalStatus',
     'exchangeType','messageFrequency','bio'];
-const bioAttributesWithUserId = ['userId'].concat(bioAttributes);
 
 const app = express();
 app.use(express.json());   // If this is not included, then we will not be able to read json sent in request body
@@ -108,11 +107,17 @@ app.post('/register', verifyRegistration, (req, res, next) => {
     });
 });
 
-const verifyBioNotEmpty = (req, res, next) => {
+const verifyBioPostRequestBody = (req, res, next) => {
+    // Check if request body includes all bio attributes (and no non-bio attributes)
+    const attributesInRequestBody = Object.keys(req.body);
+    if(attributesInRequestBody.sort().join(',') !== bioAttributes.sort().join(',')){
+        return res.status(400).json('Please include all bio attributes and do not send any non-bio attributes in the request body');
+    }
+
+    // Check if each bio attribute is non-empty
     for (var bioAttribute of bioAttributes) {
         if (!req.body[bioAttribute]) {
-            console.log(bioAttribute);
-            return res.status(400).json('Please include all bio attributes');
+            return res.status(400).json(`Please include the ${bioAttribute} attribute, it cannot be empty or null`);
         }
     }
     next()
@@ -133,7 +138,8 @@ const attachBioAsList = (req, res, next) => {
 // Output: 201 Created status.
 //         (The bio will be created for the user associated with the token).
 // Alternate Output: Some other status like 404 or 500, and the response will contain the error message.
-app.post('/bio', verifyToken, attachUserIdToRequest, verifyBioNotEmpty, attachBioAsList, (req, res, next) => {
+app.post('/bio', verifyToken, attachUserIdToRequest, verifyBioPostRequestBody, attachBioAsList, (req, res, next) => {
+    const bioAttributesWithUserId = ['userId'].concat(bioAttributes);
     const sql = `INSERT INTO bio (${bioAttributesWithUserId.toString()}) 
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
     
@@ -144,7 +150,6 @@ app.post('/bio', verifyToken, attachUserIdToRequest, verifyBioNotEmpty, attachBi
         res.status(201).json();
     });
 });
-
 
 
 // GET /bio
@@ -160,16 +165,41 @@ app.get('/bio', verifyToken, attachUserIdToRequest, (req, res, next) => {
         if (data.length === 0) {
             return res.status(404).json('User does not have bio');
         }
+        delete data[0].userId;     // No need to return userId to the user
         return res.json(data[0]);
     });
 });
 
+const verifyBioPatchRequestBody = (req, res, next) => {
+    // Check if all properties of request body are bio attributes
+    for (var bioAttribute in req.body) {
+        if (!bioAttribute in bioAttributes) {
+            return res.status(400).json(`${bioAttribute} is not a valid bio attribute`);
+        }
+    }
+    
+    // Check if each bio attribute is non-empty
+    for (var bioAttribute in req.body) {
+        if (!req.body[bioAttribute]) {
+            return res.status(400).json('Request body must contain only non-empty properties');
+        }
+    }
+    next();
+}
 
 // PATCH /bio
 // Input: 1) Login token, attached to the header with the key set to "token".
 //        2) A json object containing only the fields of the bio that need to be updated (attached to the request body).
 // Output: 200 OK status, and the updated bio of the user (containing all the fields, not just the fields that were updated) will be returned as a json object.
 // Alternate Output: Some other status like 404 or 500, and the response will contain the error message.
+app.patch('/bio',  verifyToken, attachUserIdToRequest, verifyBioPatchRequestBody, (req, res, next) => {
+        
+    var sql = `UPDATE bio 
+            SET
+            WHERE userId = ?`;
+        return res.json();
+    });
+
 
 // If the PORT environment variable is not set in the computer, then use port 3000 by default
 app.listen(process.env.PORT || 3001, () => {
