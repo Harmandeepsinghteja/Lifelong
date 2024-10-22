@@ -145,8 +145,6 @@ app.post('/bio', verifyToken, attachUserIdToRequest, verifyBioPostRequestBody, a
     
     db.query(sql, req.bioValues, (err, result) =>  {
         if (err) return res.status(500).json(`Server side error: ${err}`);
-
-        console.log(result);
         res.status(201).json();
     });
 });
@@ -173,7 +171,7 @@ app.get('/bio', verifyToken, attachUserIdToRequest, (req, res, next) => {
 const verifyBioPatchRequestBody = (req, res, next) => {
     // Check if all properties of request body are bio attributes
     for (var bioAttribute in req.body) {
-        if (!bioAttribute in bioAttributes) {
+        if (!bioAttributes.includes(bioAttribute)) {
             return res.status(400).json(`${bioAttribute} is not a valid bio attribute`);
         }
     }
@@ -186,6 +184,17 @@ const verifyBioPatchRequestBody = (req, res, next) => {
     }
     next();
 }
+  
+const bioPatchQueryBuilder = (requestBody, userId) => {
+    const setStatementTemplate = Object.entries(requestBody)
+        .map(([key, value]) => `${key} = ?`)
+        .join(', ');
+    
+    const sql = `UPDATE bio 
+            SET ${setStatementTemplate}
+            WHERE userId = ${userId}`;
+    return sql;
+}
 
 // PATCH /bio
 // Input: 1) Login token, attached to the header with the key set to "token".
@@ -193,11 +202,12 @@ const verifyBioPatchRequestBody = (req, res, next) => {
 // Output: 200 OK status, and the updated bio of the user (containing all the fields, not just the fields that were updated) will be returned as a json object.
 // Alternate Output: Some other status like 404 or 500, and the response will contain the error message.
 app.patch('/bio',  verifyToken, attachUserIdToRequest, verifyBioPatchRequestBody, (req, res, next) => {
-        
-    var sql = `UPDATE bio 
-            SET
-            WHERE userId = ?`;
-        return res.json();
+    const sql = bioPatchQueryBuilder(req.body, req.userId);
+
+    db.query(sql, Object.values(req.body),(err, result) =>  {
+        if (err) return res.status(500).json(`Server side error: ${err}`);
+        res.status(200).json();
+    });
     });
 
 
@@ -205,6 +215,4 @@ app.patch('/bio',  verifyToken, attachUserIdToRequest, verifyBioPatchRequestBody
 app.listen(process.env.PORT || 3001, () => {
     console.log(`Server is running on port ${process.env.PORT || 3001}`);
 });
-
-
 
