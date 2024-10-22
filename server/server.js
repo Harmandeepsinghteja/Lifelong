@@ -151,6 +151,19 @@ app.post('/bio', verifyToken, attachUserIdToRequest, verifyBioNotEmpty, attachBi
 // Input: 1) Login token, attached to the header with the key set to "token".
 // Output: 200 OK status, and the bio of the user will be returned as a json object.
 // Alternate Output: Some other status like 404 or 500, and the response will contain the error message.
+app.get('/bio', verifyToken, attachUserIdToRequest, (req, res, next) => {
+    var sql = "SELECT * FROM bio WHERE userId = ?";
+    db.query(sql, [req.userId], (err, data) => {
+        if (err) {
+            return res.status(500).json(`Server side error: ${err}`);
+        }
+        if (data.length === 0) {
+            return res.status(404).json('User does not have bio');
+        }
+        return res.json(data[0]);
+    });
+});
+
 
 // PATCH /bio
 // Input: 1) Login token, attached to the header with the key set to "token".
