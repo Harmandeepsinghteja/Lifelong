@@ -36,7 +36,6 @@ const verifyToken = (req, res, next) => {
             }
         });
     }
-    next();
 }
 
 // Note: we do not need to implement a logout endpoint in the server.
