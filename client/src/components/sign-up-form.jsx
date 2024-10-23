@@ -34,7 +34,7 @@ export default function SignUpForm() {
     e.preventDefault();
     setError("");
 
-    if (!email || !username || !password) {
+    if (!username || !password) {
       alert("Please fill in all fields.");
       return;
     }
@@ -66,20 +66,7 @@ export default function SignUpForm() {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email" className="text-zinc-100">
-              Email
-            </Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="Enter your email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="bg-zinc-700 text-zinc-100 border-zinc-600 focus:border-zinc-500"
-            />
-          </div>
+
           <div className="space-y-2">
             <Label htmlFor="username" className="text-zinc-100">
               Username
