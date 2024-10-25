@@ -211,6 +211,88 @@ app.patch('/bio',  verifyToken, attachUserIdToRequest, verifyBioPatchRequestBody
     });
 
 
+// GET /user-meta-data
+// Input: 1) Login token, attached to the header with the key set to "token".
+// Output: 200 OK status, and the json object containing the following user metadata:
+// {
+// userId: ...,
+// username: ...,
+// bioComplete: <this will be a boolean>,
+// matchedUserID: ...,
+// matchedUsername: ...,
+// }
+// Alternate Output: Some other status like 404 or 500, and the response will contain the error message.
+
+
+const queryPromiseAdapter = (sql) => {
+    return new Promise((resolve, reject) => {
+        db.query(sql, (err, result) => {
+            if (err) reject(err);
+            else resolve(result);
+        }); 
+    });
+};
+
+
+app.get('/test', async (req, res, next) => {
+
+    const sql =  `SELECT users.id, users.username
+        FROM users
+        JOIN user_match on users.matchId = user_match.id
+        WHERE users.id != 1`;
+    try {
+        const result = await queryPromiseAdapter(sql);
+        console.log(result);
+        res.json(result);
+    }
+    catch (err) {
+        return res.status(500).json(`Server side error: ${err}`);
+    }
+    
+});
+
+
+
+app.get('/user-metadata', verifyToken, attachUserIdToRequest, async (req, res, next) => {
+    var metaData = {userID: req.userId, username: req.username};
+
+    // Check if bio is complete:
+    var sql = `SELECT * FROM users WHERE id = ${req.userId}`;
+    try {
+        var result = await queryPromiseAdapter(sql);
+
+        if (result.length === 0) {
+            metaData.bioComplete = false;
+            return res.json(metaData);
+        }
+        metaData.bioComplete = true;
+        
+        // Check if user is matched:
+        const matchId = result[0].matchId;
+        if (!matchId) {
+            return res.json(metaData);
+        }
+
+        // If user is matched, add id and username of the matched user to the return object
+        sql = `SELECT users.id, users.username
+            FROM users
+            JOIN user_match on users.matchId = user_match.id
+            WHERE users.id != ${req.userId}`;
+        
+        result = await queryPromiseAdapter(sql);
+        metaData.matchedUserId = result[0].id;
+        metaData.matchedUsername = result[0].username;
+        return res.json(metaData);
+
+    }
+    catch (err) {
+        return res.status(500).json(`Server side error: ${err}`);
+    }
+    
+
+
+});
+
 // If the PORT environment variable is not set in the computer, then use port 3000 by default
 app.listen(process.env.PORT || 3001, () => {
     console.log(`Server is running on port ${process.env.PORT || 3001}`);
