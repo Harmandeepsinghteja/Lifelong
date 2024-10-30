@@ -6,6 +6,8 @@ import jwt from 'jsonwebtoken';
 const SECRET_KEY = 'secret';
 const bioAttributes = ['age', 'occupation','gender','ethnicity','country','homeCountry','maritalStatus',
     'exchangeType','messageFrequency','bio'];
+const ADMIN_USERNAME = 'admin';
+const ADMIN_PASSWORD = 'password';
 
 const app = express();
 app.use(express.json());   // If this is not included, then we will not be able to read json sent in request body
@@ -64,6 +66,21 @@ app.post('/login', (req, res, next) => {
         res.json({token: token});
     });
 });
+
+// POST /admin-login
+// Input: Username and password (attached to request body)
+// Output: 200 OK status, and the response will contain the token.
+// Alternate Output: Some other status like 404 or 500, and the response will contain the error message.
+app.post('/admin-login', (req, res, next) => {
+    if (req.body.username === ADMIN_USERNAME && req.body.password === ADMIN_PASSWORD) {
+        const token = jwt.sign({ADMIN_USERNAME}, SECRET_KEY);
+        res.json({admin_token: token});
+    }
+    else {
+        return res.status(400).json('Invalid admin credentials');
+    }
+});
+
 
 app.get('/username', verifyToken, (req, res, next) => {
     // The verifyToken middleware ensures that the token is valid, so inside the body of this function we can
@@ -288,9 +305,6 @@ app.get('/user-metadata', verifyToken, attachUserIdToRequest, async (req, res, n
     catch (err) {
         return res.status(500).json(`Server side error: ${err}`);
     }
-    
-
-
 });
 
 // If the PORT environment variable is not set in the computer, then use port 3000 by default

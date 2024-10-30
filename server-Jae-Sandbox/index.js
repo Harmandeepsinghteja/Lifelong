@@ -134,7 +134,11 @@ app.get("/user-matches", (req, res) => {
       matchedUsername: "UserA",
       reason: "Shared Interests",
     },
-    { username: "User2", matchedUsername: "UserB", reason: "Proximity" },
+    { 
+      username: "User2",
+      matchedUsername: "UserB",
+      reason: "Proximity" 
+    },
     {
       username: "User3",
       matchedUsername: "UserC",
