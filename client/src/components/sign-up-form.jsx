@@ -66,7 +66,6 @@ export default function SignUpForm() {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
-
           <div className="space-y-2">
             <Label htmlFor="username" className="text-zinc-100">
               Username

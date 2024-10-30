@@ -92,7 +92,7 @@ app.get("/user-meta-data", (req, res, next) => {
         userID: 1,
         bioComplete: true,
         matchedUserID: 2,
-        matchedUsername: "",
+        matchedUsername: "Jason",
       });
     }
   });

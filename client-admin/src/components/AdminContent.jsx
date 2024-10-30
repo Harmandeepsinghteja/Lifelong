@@ -10,11 +10,11 @@ import {
 } from "@/components/ui/table";
 import { useSharedState } from "../MyContext";
 
-export default function Component() {
+export default function AdminContent() {
   const [tableData, setTableData] = useState([]);
   const [userCount, setUserCount] = useState(0);
   const [matchedUserCount, setMatchedUserCount] = useState(0);
-  const { isAdminLoggedIn, setIsAdminLoggedIn } = useSharedState();
+  const { isLoggedIn, setIsLoggedIn } = useSharedState();
 
   const fetchData = async () => {
     const adminToken = localStorage.getItem("adminToken");
@@ -33,9 +33,16 @@ export default function Component() {
     console.log(matchedUserCount);
   };
 
+  const handleLogout = () => {
+    if (!isLoggedIn) {
+      localStorage.removeItem("adminToken");
+      window.location.reload(true); // Refreshes the current page, same as clicking the refresh button in your browser
+    }
+  };
+
   useEffect(() => {
     fetchData();
-  }, [isAdminLoggedIn]);
+  }, [isLoggedIn]);
 
   return (
     <div className="min-h-screen bg-black text-white p-8">
@@ -44,6 +51,11 @@ export default function Component() {
           <h1 className="text-xl md:text-6xl font-bold  mr-12">
             {matchedUserCount}/{userCount} users matched
           </h1>
+          <div>
+
+            <span onClick={handleLogout}>Log out</span>
+          </div>
+
           <Button
             onClick={fetchData}
             className=" text-sm md:text-xl  bg-transparent text-white border border-white hover:bg-white hover:text-black transition-colors"

@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { User, Settings, LogOut } from "lucide-react";
+import { User, MessageSquareX, LogOut } from "lucide-react";
 import { useSharedState } from "../MyContext";
 
 export default function UserIconDropdown({ username }) {
@@ -20,12 +20,18 @@ export default function UserIconDropdown({ username }) {
 
   const handleLogout = () => {
     if (!isLoggedIn) {
-      alert("You are alredy logged out!");
-    } else {
       localStorage.removeItem("token");
       window.location.reload(true); // Refreshes the current page, same as clicking the refresh button in your browser
     }
   };
+
+  const handleUnmatch = () => {
+    if (window.confirm("Are you sure you want to unmatch? You will never be able to see your penpal once you unmatch.")) {
+
+    } else { }
+
+  };
+
   const navigate = useNavigate();
 
   return (
@@ -51,10 +57,10 @@ export default function UserIconDropdown({ username }) {
           <User className="mr-2 h-4 w-4" />
           <span onClick={() => navigate("/bio")}>View/Update Bio</span>
         </DropdownMenuItem>
-        {/* <DropdownMenuItem className="focus:bg-zinc-700 focus:text-zinc-100">
-          <Settings className="mr-2 h-4 w-4" />
-          <span>Settings</span>
-        </DropdownMenuItem> */}
+        <DropdownMenuItem className="focus:bg-zinc-700 focus:text-zinc-100">
+          <MessageSquareX className="mr-2 h-4 w-4" />
+          <span onClick={handleUnmatch}>Unmatch</span>
+        </DropdownMenuItem>
         <DropdownMenuSeparator className="bg-zinc-700" />
         <DropdownMenuItem className="focus:bg-zinc-700 focus:text-zinc-100">
           <LogOut className="mr-2 h-4 w-4" />
