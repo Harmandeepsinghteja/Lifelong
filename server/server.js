@@ -72,7 +72,6 @@ app.post('/login', (req, res, next) => {
 // Output: 200 OK status, and the response will contain the token.
 // Alternate Output: Some other status like 404 or 500, and the response will contain the error message.
 app.post('/admin-login', (req, res, next) => {
-    
     if (req.body.username === ADMIN_USERNAME && req.body.password === ADMIN_PASSWORD) {
         const token = jwt.sign({ADMIN_USERNAME}, SECRET_KEY);
         res.json({admin_token: token});
