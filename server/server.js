@@ -2,6 +2,8 @@ import express from 'express';
 import mysql from 'mysql';
 import cors from 'cors';
 import jwt from 'jsonwebtoken';
+import { createServer } from 'node:http';
+import {Server} from "socket.io";
 
 const SECRET_KEY = 'secret';
 const bioAttributes = ['age', 'occupation','gender','ethnicity','country','homeCountry','maritalStatus',
@@ -14,6 +16,9 @@ app.use(express.json());   // If this is not included, then we will not be able 
 app.use(cors());  ///// If program doesn't work it could be because I excluded stuff inside cors
                     // If this is not included, then the frontend will not be able to recieve responses from the api
                     // because the browsers will not allow it.
+
+const server = createServer(app);
+const io = new Server(server, { cors: { origin: "*" } });
 
 const db = mysql.createConnection({
     host: "localhost",
@@ -250,6 +255,15 @@ const queryPromiseAdapter = (sql) => {
     });
 };
 
+const queryPromiseAdapterWithPlaceholders = (sql, args) => {
+    return new Promise((resolve, reject) => {
+        db.query(sql, args, (err, result) => {
+            if (err) reject(err);
+            else resolve(result);
+        }); 
+    });
+};
+
 
 app.get('/test', async (req, res, next) => {
 
@@ -267,7 +281,6 @@ app.get('/test', async (req, res, next) => {
     }
     
 });
-
 
 
 app.get('/user-metadata', verifyToken, attachUserIdToRequest, async (req, res, next) => {
@@ -294,7 +307,7 @@ app.get('/user-metadata', verifyToken, attachUserIdToRequest, async (req, res, n
         sql = `SELECT users.id, users.username
             FROM users
             JOIN user_match on users.matchId = user_match.id
-            WHERE users.id != ${req.userId}`;
+            WHERE users.id != ${req.userId} AND users.matchId = ${matchId}`;
         
         result = await queryPromiseAdapter(sql);
         metaData.matchedUserId = result[0].id;
@@ -307,8 +320,31 @@ app.get('/user-metadata', verifyToken, attachUserIdToRequest, async (req, res, n
     }
 });
 
+// Middleware for WebSocket connections
+io.use((socket, next) => {
+    const token = socket.handshake.auth.token;
+    if (!token) {
+        return next(new Error("Authentication error: No token provided"));
+    }
+
+    jwt.verify(token, SECRET_KEY, (err, decoded) => {
+        if (err) {
+            return next(new Error("Authentication error: Invalid token"));
+        }
+        socket.username = decoded.username; // Attach the username to the socket object
+        next();
+    });
+});
+
+io.on('connection', (socket) => {    
+    socket.join(socket.username);
+    socket.on('message', async (message) => {
+        io.to(message.matchedUsername).emit('message', message.content );
+    });
+});
+
 // If the PORT environment variable is not set in the computer, then use port 3000 by default
-app.listen(process.env.PORT || 3001, () => {
+server.listen(process.env.PORT || 3001, () => {
     console.log(`Server is running on port ${process.env.PORT || 3001}`);
 });
 
