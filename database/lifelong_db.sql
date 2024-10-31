@@ -6,7 +6,7 @@ DROP TABLE IF EXISTS users;
 CREATE TABLE users (
   id int PRIMARY KEY AUTO_INCREMENT,
   username varchar(50) UNIQUE NOT NULL,
-  password varchar(50) NOT NULL,
+  password varchar(50) NOT NULL
 );
 
 DROP TABLE IF EXISTS bio;
@@ -41,6 +41,6 @@ CREATE TABLE user_match (
   matchId int,
   PRIMARY KEY (userId, matchId),
   FOREIGN KEY (userId) REFERENCES users(id),
-  FOREIGN KEY (matchId) REFERENCES matches(id);
+  FOREIGN KEY (matchId) REFERENCES matches(id)\
 );
 
