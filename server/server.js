@@ -255,6 +255,15 @@ const queryPromiseAdapter = (sql) => {
     });
 };
 
+const queryPromiseAdapterWithPlaceholders = (sql, args) => {
+    return new Promise((resolve, reject) => {
+        db.query(sql, args, (err, result) => {
+            if (err) reject(err);
+            else resolve(result);
+        }); 
+    });
+};
+
 
 app.get('/test', async (req, res, next) => {
 
@@ -272,7 +281,6 @@ app.get('/test', async (req, res, next) => {
     }
     
 });
-
 
 
 app.get('/user-metadata', verifyToken, attachUserIdToRequest, async (req, res, next) => {
@@ -299,7 +307,7 @@ app.get('/user-metadata', verifyToken, attachUserIdToRequest, async (req, res, n
         sql = `SELECT users.id, users.username
             FROM users
             JOIN user_match on users.matchId = user_match.id
-            WHERE users.id != ${req.userId}`;
+            WHERE users.id != ${req.userId} AND users.matchId = ${matchId}`;
         
         result = await queryPromiseAdapter(sql);
         metaData.matchedUserId = result[0].id;
@@ -312,15 +320,26 @@ app.get('/user-metadata', verifyToken, attachUserIdToRequest, async (req, res, n
     }
 });
 
+// Middleware for WebSocket connections
+io.use((socket, next) => {
+    const token = socket.handshake.auth.token;
+    if (!token) {
+        return next(new Error("Authentication error: No token provided"));
+    }
 
-io.on('connection', (socket) => {
-    const username = socket.handshake.auth.username;
-    socket.join(username);
+    jwt.verify(token, SECRET_KEY, (err, decoded) => {
+        if (err) {
+            return next(new Error("Authentication error: Invalid token"));
+        }
+        socket.username = decoded.username; // Attach the username to the socket object
+        next();
+    });
+});
 
-    // We can use anything besides 'message' as well. The message variable can be a javascript object or a string
-    socket.on('message', (message) =>     {   
-        console.log(message);
-        io.to(message.recipientUsername).emit('message', `${username} said ${message.content}` );
+io.on('connection', (socket) => {    
+    socket.join(socket.username);
+    socket.on('message', async (message) => {
+        io.to(message.matchedUsername).emit('message', message.content );
     });
 });
 
