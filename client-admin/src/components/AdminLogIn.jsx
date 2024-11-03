@@ -14,11 +14,11 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 
 export default function AdminLogIn() {
-  const { isAdminLoggedIn, setIsAdminLoggedIn } = useSharedState();
 
   const [adminUsername, setAdminUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const { isLoggedIn, setIsLoggedIn } = useSharedState();
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -48,13 +48,13 @@ export default function AdminLogIn() {
       .then((data) => {
         if (responseStatus === 200) {
           localStorage.setItem("adminToken", data.adminToken);
-          setIsAdminLoggedIn(true);
+          setIsLoggedIn(true);
         } else {
           alert(data);
         }
       })
       .catch((err) => {
-        setIsAdminLoggedIn(false);
+        setIsLoggedIn(false);
         console.log(err);
       });
   };
