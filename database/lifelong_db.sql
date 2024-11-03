@@ -4,15 +4,15 @@ USE lifelong_db;
 DROP TABLE IF EXISTS users;
 
 CREATE TABLE users (
-  id int PRIMARY KEY AUTO_INCREMENT,
-  username varchar(50) UNIQUE NOT NULL,
-  password varchar(50) NOT NULL,
+    id int PRIMARY KEY AUTO_INCREMENT,
+    username varchar(50) UNIQUE NOT NULL,
+    password varchar(50) NOT NULL
 );
 
 DROP TABLE IF EXISTS bio;
 
 CREATE TABLE bio (
-	userId INT PRIMARY KEY,
+    userId INT PRIMARY KEY,
     age INT NOT NULL,
     occupation VARCHAR(100) NOT NULL,
     gender VARCHAR(100) NOT NULL,
@@ -26,21 +26,43 @@ CREATE TABLE bio (
     FOREIGN KEY (userId) REFERENCES users(id)
 );
 
-DROP TABLE IF EXISTS matches;
-
-CREATE TABLE matches (
-  id int PRIMARY KEY AUTO_INCREMENT,
-  createdTime TIMESTAMP NOT NULL,
-  unmatchedTime TIMESTAMP DEFAULT NULL
-);
-
 DROP TABLE IF EXISTS user_match;
 
 CREATE TABLE user_match (
-  userId int,
-  matchId int,
-  PRIMARY KEY (userId, matchId),
-  FOREIGN KEY (userId) REFERENCES users(id),
-  FOREIGN KEY (matchId) REFERENCES matches(id);
+    id int PRIMARY KEY AUTO_INCREMENT,
+    userId int,
+    matchedUserId int,
+    createdTime DATETIME NOT NULL,
+    unmatchedTime DATETIME DEFAULT NULL,
+    FOREIGN KEY (userId) REFERENCES users(id),
+    FOREIGN KEY (matchedUserId) REFERENCES users(id)
 );
+
+CREATE TABLE message (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    matchId INT NOT NULL,
+    content TEXT NOT NULL,
+    createdTime DATETIME NOT NULL,
+    FOREIGN KEY (matchId) REFERENCES user_match(id) 
+);
+
+-- DROP TABLE IF EXISTS user_match;
+
+-- CREATE TABLE user_match (
+--   userId int,
+--   matchId int,
+--   PRIMARY KEY (userId, matchId),
+--   FOREIGN KEY (userId) REFERENCES users(id),
+--   FOREIGN KEY (matchId) REFERENCES matches(id);
+-- );
+
+-- DROP TABLE IF EXISTS matches;
+
+-- CREATE TABLE matches (
+--   id int PRIMARY KEY AUTO_INCREMENT,
+--   createdTime DATETIME NOT NULL,
+--   unmatchedTime DATETIME DEFAULT NULL
+-- );
+
+
 
