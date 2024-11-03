@@ -19,20 +19,7 @@ socket.on('message', text => {
 document.querySelector('button').onclick = () => {
 
     const text = document.getElementById('message').value;
-    const recipientUsername = document.getElementById('recipientUsername').value;
-    socket.emit('message', {"recipientUsername": recipientUsername, "message": text})
+    const matchedUsername = document.getElementById('matchedUsername').value;
+    socket.emit('message', {"matchedUsername": matchedUsername, "content": text})
     
 }
-
-// Regular Websockets
-
-// const socket = new WebSocket('ws://localhost:8080');
-
-// // Listen for messages
-// socket.onmessage = ({ data }) => {
-//     console.log('Message from server ', data);
-// };
-
-// document.querySelector('button').onclick = () => {
-//     socket.send('hello');
-// }

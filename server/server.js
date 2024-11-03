@@ -327,6 +327,13 @@ const getCurrentDateTimeAsString = () => {
     return dateTime;
 }
 
+/*
+The message object must be of the format:
+{
+    content: "..."
+    matchedUsername: "..."
+}
+*/ 
 io.on('connection', async (socket) => {    
     socket.join(socket.username);
     socket.on('message', async (message) => {
@@ -359,9 +366,27 @@ io.on('connection', async (socket) => {
             return err;
         }
         
-
-        
     });
+});
+
+
+
+app.get('/message-history-of-current-match', verifyToken, attachUserIdToRequest, async (req, res) => {
+    try {
+        // Get messages sent by the user or the matched user for their current match
+        var sql = `SELECT message.id, user_match.userId as senderId, message.content, message.createdTime
+            FROM message
+            JOIN user_match on message.matchId = user_match.id
+            WHERE (user_match.userId = ${req.userId} OR user_match.matchedUserId = ${req.userId}) AND
+                user_match.unmatchedTime IS NULL
+            ORDER BY message.createdTime;`;
+        var result = await queryPromiseAdapter(sql);
+        console.log(result);
+        res.json(result);
+    }
+    catch (err) {
+        return res.status(500).json(`Server side error: ${err}`);
+    }
 });
 
 // If the PORT environment variable is not set in the computer, then use port 3000 by default
