@@ -264,31 +264,12 @@ const queryPromiseAdapterWithPlaceholders = (sql, args) => {
     });
 };
 
-
-app.get('/test', async (req, res, next) => {
-
-    const sql =  `SELECT users.id, users.username
-        FROM users
-        JOIN user_match on users.matchId = user_match.id
-        WHERE users.id != 1`;
-    try {
-        const result = await queryPromiseAdapter(sql);
-        console.log(result);
-        res.json(result);
-    }
-    catch (err) {
-        return res.status(500).json(`Server side error: ${err}`);
-    }
-    
-});
-
-
 app.get('/user-metadata', verifyToken, attachUserIdToRequest, async (req, res, next) => {
     var metaData = {userID: req.userId, username: req.username};
 
-    // Check if bio is complete:
-    var sql = `SELECT * FROM users WHERE id = ${req.userId}`;
     try {
+        // Check if bio is complete
+        var sql = `SELECT * FROM bio WHERE bio.userId = ${req.userId}`;
         var result = await queryPromiseAdapter(sql);
 
         if (result.length === 0) {
@@ -297,19 +278,18 @@ app.get('/user-metadata', verifyToken, attachUserIdToRequest, async (req, res, n
         }
         metaData.bioComplete = true;
         
-        // Check if user is matched:
-        const matchId = result[0].matchId;
-        if (!matchId) {
-            return res.json(metaData);
-        }
-
-        // If user is matched, add id and username of the matched user to the return object
+        // Find the id and username of the matched user. If nothing is returned, it means that the user is not matched
         sql = `SELECT users.id, users.username
             FROM users
-            JOIN user_match on users.matchId = user_match.id
-            WHERE users.id != ${req.userId} AND users.matchId = ${matchId}`;
-        
+            JOIN user_match on users.id = user_match.matchedUserId
+            WHERE user_match.userId = ${req.userId} AND user_match.unmatchedTime IS NULL;`;
         result = await queryPromiseAdapter(sql);
+        
+        // If nothing is returned in the sql query, it means that the user is not matched
+        if (result.length === 0) {
+            return res.json(metaData);
+        }
+        // If user is matched, add id and username of the matched user to the return object
         metaData.matchedUserId = result[0].id;
         metaData.matchedUsername = result[0].username;
         return res.json(metaData);
@@ -336,10 +316,51 @@ io.use((socket, next) => {
     });
 });
 
-io.on('connection', (socket) => {    
+const getCurrentDateTimeAsString = () => {
+    var dateTime = new Date();
+    dateTime = dateTime.getUTCFullYear() + '-' +
+        ('00' + (dateTime.getUTCMonth()+1)).slice(-2) + '-' +
+        ('00' + dateTime.getUTCDate()).slice(-2) + ' ' + 
+        ('00' + dateTime.getUTCHours()).slice(-2) + ':' + 
+        ('00' + dateTime.getUTCMinutes()).slice(-2) + ':' + 
+        ('00' + dateTime.getUTCSeconds()).slice(-2);
+    return dateTime;
+}
+
+io.on('connection', async (socket) => {    
     socket.join(socket.username);
     socket.on('message', async (message) => {
-        io.to(message.matchedUsername).emit('message', message.content );
+        
+        try {
+            // Get current match id of user
+            var sql = `
+                SELECT user_match.id
+                FROM user_match
+                JOIN users on users.id = user_match.userId
+                WHERE users.username = '${socket.username}' AND user_match.unmatchedTime IS NULL`;
+            
+            var result = await queryPromiseAdapter(sql);
+            if (result.length === 0) {
+                return new Error('Could not find current match id of user');
+            }
+            const matchId = result[0].id;
+
+            // Insert the message into the message table
+            const createdTime = getCurrentDateTimeAsString();
+            sql =  `INSERT INTO message (matchId, content, createdTime)
+                VALUES (?, ?, ?);`;
+            result = await queryPromiseAdapterWithPlaceholders(sql, [matchId, message.content, createdTime]);
+            
+            // Emit the message to the matched user
+            io.to(message.matchedUsername).emit('message', message.content );
+        }
+        catch (err) {
+            console.log(err)
+            return err;
+        }
+        
+
+        
     });
 });
 
