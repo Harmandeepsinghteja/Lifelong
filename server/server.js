@@ -327,6 +327,13 @@ const getCurrentDateTimeAsString = () => {
     return dateTime;
 }
 
+/*
+The message object must be of the format:
+{
+    content: "..."
+    matchedUsername: "..."
+}
+*/ 
 io.on('connection', async (socket) => {    
     socket.join(socket.username);
     socket.on('message', async (message) => {
@@ -358,8 +365,6 @@ io.on('connection', async (socket) => {
             console.log(err)
             return err;
         }
-        
-
         
     });
 });
