@@ -2,16 +2,23 @@ import express from 'express';
 import mysql from 'mysql';
 import cors from 'cors';
 import jwt from 'jsonwebtoken';
+import { createServer } from 'node:http';
+import {Server} from "socket.io";
 
 const SECRET_KEY = 'secret';
 const bioAttributes = ['age', 'occupation','gender','ethnicity','country','homeCountry','maritalStatus',
     'exchangeType','messageFrequency','bio'];
+const ADMIN_USERNAME = 'admin';
+const ADMIN_PASSWORD = 'password';
 
 const app = express();
 app.use(express.json());   // If this is not included, then we will not be able to read json sent in request body
 app.use(cors());  ///// If program doesn't work it could be because I excluded stuff inside cors
                     // If this is not included, then the frontend will not be able to recieve responses from the api
                     // because the browsers will not allow it.
+
+const server = createServer(app);
+const io = new Server(server, { cors: { origin: "*" } });
 
 const db = mysql.createConnection({
     host: "localhost",
@@ -64,6 +71,21 @@ app.post('/login', (req, res, next) => {
         res.json({token: token});
     });
 });
+
+// POST /admin-login
+// Input: Username and password (attached to request body)
+// Output: 200 OK status, and the response will contain the token.
+// Alternate Output: Some other status like 404 or 500, and the response will contain the error message.
+app.post('/admin-login', (req, res, next) => {
+    if (req.body.username === ADMIN_USERNAME && req.body.password === ADMIN_PASSWORD) {
+        const token = jwt.sign({ADMIN_USERNAME}, SECRET_KEY);
+        res.json({admin_token: token});
+    }
+    else {
+        return res.status(400).json('Invalid admin credentials');
+    }
+});
+
 
 app.get('/username', verifyToken, (req, res, next) => {
     // The verifyToken middleware ensures that the token is valid, so inside the body of this function we can
@@ -211,8 +233,139 @@ app.patch('/bio',  verifyToken, attachUserIdToRequest, verifyBioPatchRequestBody
     });
 
 
+// GET /user-meta-data
+// Input: 1) Login token, attached to the header with the key set to "token".
+// Output: 200 OK status, and the json object containing the following user metadata:
+// {
+// userId: ...,
+// username: ...,
+// bioComplete: <this will be a boolean>,
+// matchedUserID: ...,
+// matchedUsername: ...,
+// }
+// Alternate Output: Some other status like 404 or 500, and the response will contain the error message.
+
+
+const queryPromiseAdapter = (sql) => {
+    return new Promise((resolve, reject) => {
+        db.query(sql, (err, result) => {
+            if (err) reject(err);
+            else resolve(result);
+        }); 
+    });
+};
+
+const queryPromiseAdapterWithPlaceholders = (sql, args) => {
+    return new Promise((resolve, reject) => {
+        db.query(sql, args, (err, result) => {
+            if (err) reject(err);
+            else resolve(result);
+        }); 
+    });
+};
+
+app.get('/user-metadata', verifyToken, attachUserIdToRequest, async (req, res, next) => {
+    var metaData = {userID: req.userId, username: req.username};
+
+    try {
+        // Check if bio is complete
+        var sql = `SELECT * FROM bio WHERE bio.userId = ${req.userId}`;
+        var result = await queryPromiseAdapter(sql);
+
+        if (result.length === 0) {
+            metaData.bioComplete = false;
+            return res.json(metaData);
+        }
+        metaData.bioComplete = true;
+        
+        // Find the id and username of the matched user. If nothing is returned, it means that the user is not matched
+        sql = `SELECT users.id, users.username
+            FROM users
+            JOIN user_match on users.id = user_match.matchedUserId
+            WHERE user_match.userId = ${req.userId} AND user_match.unmatchedTime IS NULL;`;
+        result = await queryPromiseAdapter(sql);
+        
+        // If nothing is returned in the sql query, it means that the user is not matched
+        if (result.length === 0) {
+            return res.json(metaData);
+        }
+        // If user is matched, add id and username of the matched user to the return object
+        metaData.matchedUserId = result[0].id;
+        metaData.matchedUsername = result[0].username;
+        return res.json(metaData);
+
+    }
+    catch (err) {
+        return res.status(500).json(`Server side error: ${err}`);
+    }
+});
+
+// Middleware for WebSocket connections
+io.use((socket, next) => {
+    const token = socket.handshake.auth.token;
+    if (!token) {
+        return next(new Error("Authentication error: No token provided"));
+    }
+
+    jwt.verify(token, SECRET_KEY, (err, decoded) => {
+        if (err) {
+            return next(new Error("Authentication error: Invalid token"));
+        }
+        socket.username = decoded.username; // Attach the username to the socket object
+        next();
+    });
+});
+
+const getCurrentDateTimeAsString = () => {
+    var dateTime = new Date();
+    dateTime = dateTime.getUTCFullYear() + '-' +
+        ('00' + (dateTime.getUTCMonth()+1)).slice(-2) + '-' +
+        ('00' + dateTime.getUTCDate()).slice(-2) + ' ' + 
+        ('00' + dateTime.getUTCHours()).slice(-2) + ':' + 
+        ('00' + dateTime.getUTCMinutes()).slice(-2) + ':' + 
+        ('00' + dateTime.getUTCSeconds()).slice(-2);
+    return dateTime;
+}
+
+io.on('connection', async (socket) => {    
+    socket.join(socket.username);
+    socket.on('message', async (message) => {
+        
+        try {
+            // Get current match id of user
+            var sql = `
+                SELECT user_match.id
+                FROM user_match
+                JOIN users on users.id = user_match.userId
+                WHERE users.username = '${socket.username}' AND user_match.unmatchedTime IS NULL`;
+            
+            var result = await queryPromiseAdapter(sql);
+            if (result.length === 0) {
+                return new Error('Could not find current match id of user');
+            }
+            const matchId = result[0].id;
+
+            // Insert the message into the message table
+            const createdTime = getCurrentDateTimeAsString();
+            sql =  `INSERT INTO message (matchId, content, createdTime)
+                VALUES (?, ?, ?);`;
+            result = await queryPromiseAdapterWithPlaceholders(sql, [matchId, message.content, createdTime]);
+            
+            // Emit the message to the matched user
+            io.to(message.matchedUsername).emit('message', message.content );
+        }
+        catch (err) {
+            console.log(err)
+            return err;
+        }
+        
+
+        
+    });
+});
+
 // If the PORT environment variable is not set in the computer, then use port 3000 by default
-app.listen(process.env.PORT || 3001, () => {
+server.listen(process.env.PORT || 3001, () => {
     console.log(`Server is running on port ${process.env.PORT || 3001}`);
 });
 
