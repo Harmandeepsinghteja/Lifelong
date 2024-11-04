@@ -61,12 +61,6 @@ export default function Navbar() {
       )}
 
       <div className="RightSideWrapper self-center items-center flex flex-row gap-6 ">
-        <Link
-          className="  text-lg xl:text-3xl  space-x-1 mr-4 text-zinc-200 hover:text-zinc-600 transition  ease-in-out"
-          to="/about"
-        >
-          About
-        </Link>
         {isLoggedIn ? <UserIconDropdown username={username} /> : <></>}
       </div>
     </nav>
