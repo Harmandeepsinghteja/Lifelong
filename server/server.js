@@ -3,19 +3,19 @@ import mysql from 'mysql';
 import cors from 'cors';
 import jwt from 'jsonwebtoken';
 import { createServer } from 'node:http';
-import {Server} from "socket.io";
+import { Server } from "socket.io";
 
 const SECRET_KEY = 'secret';
-const bioAttributes = ['age', 'occupation','gender','ethnicity','country','homeCountry','maritalStatus',
-    'exchangeType','messageFrequency','bio'];
+const bioAttributes = ['age', 'occupation', 'gender', 'ethnicity', 'country', 'homeCountry', 'maritalStatus',
+    'exchangeType', 'messageFrequency', 'bio'];
 const ADMIN_USERNAME = 'admin';
 const ADMIN_PASSWORD = 'password';
 
 const app = express();
 app.use(express.json());   // If this is not included, then we will not be able to read json sent in request body
 app.use(cors());  ///// If program doesn't work it could be because I excluded stuff inside cors
-                    // If this is not included, then the frontend will not be able to recieve responses from the api
-                    // because the browsers will not allow it.
+// If this is not included, then the frontend will not be able to recieve responses from the api
+// because the browsers will not allow it.
 
 const server = createServer(app);
 const io = new Server(server, { cors: { origin: "*" } });
@@ -54,12 +54,14 @@ const attachUserIdToRequest = (req, res, next) => {
         req.userId = data[0].id;
         next();
     });
-    
+
 }
 
 app.post('/login', (req, res, next) => {
     const sql = 'SELECT * FROM users WHERE username = ? AND password = ?';
     db.query(sql, [req.body.username, req.body.password], (err, data) => {
+        console.log(req.body.username)
+        console.log(req.body.password)
         if (err) {
             return res.status(500).json(`Server side error: ${err}`);
         }
@@ -67,8 +69,9 @@ app.post('/login', (req, res, next) => {
             return res.status(404).json('Username does not exist or password is incorrect');
         }
         const username = data[0].username;
-        const token = jwt.sign({username}, SECRET_KEY);
-        res.json({token: token});
+        const token = jwt.sign({ username }, SECRET_KEY);
+
+        res.json({ token: token });
     });
 });
 
@@ -78,8 +81,8 @@ app.post('/login', (req, res, next) => {
 // Alternate Output: Some other status like 404 or 500, and the response will contain the error message.
 app.post('/admin-login', (req, res, next) => {
     if (req.body.username === ADMIN_USERNAME && req.body.password === ADMIN_PASSWORD) {
-        const token = jwt.sign({ADMIN_USERNAME}, SECRET_KEY);
-        res.json({admin_token: token});
+        const token = jwt.sign({ ADMIN_USERNAME }, SECRET_KEY);
+        res.json({ admin_token: token });
     }
     else {
         return res.status(400).json('Invalid admin credentials');
@@ -97,11 +100,11 @@ app.get('/username', verifyToken, (req, res, next) => {
 
 const verifyRegistration = (req, res, next) => {
     // This checks whether the name, or password is empty
-    if (!req.body.username || !req.body.password) {        
+    if (!req.body.username || !req.body.password) {
         res.status(400).json('Invalid registration details');
         return;
     }
-    
+
     var sql = "SELECT * FROM users WHERE username = ?";
     db.query(sql, [req.body.username], (err, data) => {
         if (err) {
@@ -124,15 +127,15 @@ app.post('/register', verifyRegistration, (req, res, next) => {
     db.query(sql, [req.body.username, req.body.password], (err, result) => {
         if (err) return res.status(500).json(`Server side error: ${err}`);
 
-        const token = jwt.sign({username: req.body.username}, SECRET_KEY);
-        res.status(201).json({token: token});
+        const token = jwt.sign({ username: req.body.username }, SECRET_KEY);
+        res.status(201).json({ token: token });
     });
 });
 
 const verifyBioPostRequestBody = (req, res, next) => {
     // Check if request body includes all bio attributes (and no non-bio attributes)
     const attributesInRequestBody = Object.keys(req.body);
-    if(attributesInRequestBody.sort().join(',') !== bioAttributes.sort().join(',')){
+    if (attributesInRequestBody.sort().join(',') !== bioAttributes.sort().join(',')) {
         return res.status(400).json('Please include all bio attributes and do not send any non-bio attributes in the request body');
     }
 
@@ -164,8 +167,8 @@ app.post('/bio', verifyToken, attachUserIdToRequest, verifyBioPostRequestBody, a
     const bioAttributesWithUserId = ['userId'].concat(bioAttributes);
     const sql = `INSERT INTO bio (${bioAttributesWithUserId.toString()}) 
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-    
-    db.query(sql, req.bioValues, (err, result) =>  {
+
+    db.query(sql, req.bioValues, (err, result) => {
         if (err) return res.status(500).json(`Server side error: ${err}`);
         res.status(201).json();
     });
@@ -197,7 +200,7 @@ const verifyBioPatchRequestBody = (req, res, next) => {
             return res.status(400).json(`${bioAttribute} is not a valid bio attribute`);
         }
     }
-    
+
     // Check if each bio attribute is non-empty
     for (var bioAttribute in req.body) {
         if (!req.body[bioAttribute]) {
@@ -206,12 +209,12 @@ const verifyBioPatchRequestBody = (req, res, next) => {
     }
     next();
 }
-  
+
 const bioPatchQueryBuilder = (requestBody, userId) => {
     const setStatementTemplate = Object.entries(requestBody)
         .map(([key, value]) => `${key} = ?`)
         .join(', ');
-    
+
     const sql = `UPDATE bio 
             SET ${setStatementTemplate}
             WHERE userId = ${userId}`;
@@ -223,17 +226,17 @@ const bioPatchQueryBuilder = (requestBody, userId) => {
 //        2) A json object containing only the fields of the bio that need to be updated (attached to the request body).
 // Output: 200 OK status, and the updated bio of the user (containing all the fields, not just the fields that were updated) will be returned as a json object.
 // Alternate Output: Some other status like 404 or 500, and the response will contain the error message.
-app.patch('/bio',  verifyToken, attachUserIdToRequest, verifyBioPatchRequestBody, (req, res, next) => {
+app.patch('/bio', verifyToken, attachUserIdToRequest, verifyBioPatchRequestBody, (req, res, next) => {
     const sql = bioPatchQueryBuilder(req.body, req.userId);
 
-    db.query(sql, Object.values(req.body),(err, result) =>  {
+    db.query(sql, Object.values(req.body), (err, result) => {
         if (err) return res.status(500).json(`Server side error: ${err}`);
         res.status(200).json();
     });
-    });
+});
 
 
-// GET /user-meta-data
+// GET /user-metadata
 // Input: 1) Login token, attached to the header with the key set to "token".
 // Output: 200 OK status, and the json object containing the following user metadata:
 // {
@@ -251,7 +254,7 @@ const queryPromiseAdapter = (sql) => {
         db.query(sql, (err, result) => {
             if (err) reject(err);
             else resolve(result);
-        }); 
+        });
     });
 };
 
@@ -260,13 +263,13 @@ const queryPromiseAdapterWithPlaceholders = (sql, args) => {
         db.query(sql, args, (err, result) => {
             if (err) reject(err);
             else resolve(result);
-        }); 
+        });
     });
 };
 
 app.get('/user-metadata', verifyToken, attachUserIdToRequest, async (req, res, next) => {
-    var metaData = {userID: req.userId, username: req.username};
-
+    var metaData = { userID: req.userId, username: req.username };
+    console.log("metadta:", req.username)
     try {
         // Check if bio is complete
         var sql = `SELECT * FROM bio WHERE bio.userId = ${req.userId}`;
@@ -277,14 +280,14 @@ app.get('/user-metadata', verifyToken, attachUserIdToRequest, async (req, res, n
             return res.json(metaData);
         }
         metaData.bioComplete = true;
-        
+
         // Find the id and username of the matched user. If nothing is returned, it means that the user is not matched
         sql = `SELECT users.id, users.username
             FROM users
             JOIN user_match on users.id = user_match.matchedUserId
             WHERE user_match.userId = ${req.userId} AND user_match.unmatchedTime IS NULL;`;
         result = await queryPromiseAdapter(sql);
-        
+
         // If nothing is returned in the sql query, it means that the user is not matched
         if (result.length === 0) {
             return res.json(metaData);
@@ -319,10 +322,10 @@ io.use((socket, next) => {
 const getCurrentDateTimeAsString = () => {
     var dateTime = new Date();
     dateTime = dateTime.getUTCFullYear() + '-' +
-        ('00' + (dateTime.getUTCMonth()+1)).slice(-2) + '-' +
-        ('00' + dateTime.getUTCDate()).slice(-2) + ' ' + 
-        ('00' + dateTime.getUTCHours()).slice(-2) + ':' + 
-        ('00' + dateTime.getUTCMinutes()).slice(-2) + ':' + 
+        ('00' + (dateTime.getUTCMonth() + 1)).slice(-2) + '-' +
+        ('00' + dateTime.getUTCDate()).slice(-2) + ' ' +
+        ('00' + dateTime.getUTCHours()).slice(-2) + ':' +
+        ('00' + dateTime.getUTCMinutes()).slice(-2) + ':' +
         ('00' + dateTime.getUTCSeconds()).slice(-2);
     return dateTime;
 }
@@ -333,11 +336,11 @@ The message object must be of the format:
     content: "..."
     matchedUsername: "..."
 }
-*/ 
-io.on('connection', async (socket) => {    
+*/
+io.on('connection', async (socket) => {
     socket.join(socket.username);
     socket.on('message', async (message) => {
-        
+
         try {
             // Get current match id of user
             var sql = `
@@ -345,7 +348,7 @@ io.on('connection', async (socket) => {
                 FROM user_match
                 JOIN users on users.id = user_match.userId
                 WHERE users.username = '${socket.username}' AND user_match.unmatchedTime IS NULL`;
-            
+
             var result = await queryPromiseAdapter(sql);
             if (result.length === 0) {
                 return new Error('Could not find current match id of user');
@@ -354,18 +357,18 @@ io.on('connection', async (socket) => {
 
             // Insert the message into the message table
             const createdTime = getCurrentDateTimeAsString();
-            sql =  `INSERT INTO message (matchId, content, createdTime)
+            sql = `INSERT INTO message (matchId, content, createdTime)
                 VALUES (?, ?, ?);`;
             result = await queryPromiseAdapterWithPlaceholders(sql, [matchId, message.content, createdTime]);
-            
+
             // Emit the message to the matched user
-            io.to(message.matchedUsername).emit('message', message.content );
+            io.to(message.matchedUsername).emit('message', message.content);
         }
         catch (err) {
             console.log(err)
             return err;
         }
-        
+
     });
 });
 
@@ -391,7 +394,7 @@ app.get('/message-history-of-current-match', verifyToken, attachUserIdToRequest,
 app.get('/user-matches', verifyToken, async (req, res, next) => {
     try {
         // Get all user matches (both current and previous), but with the reverse version of each match eliminated
-        const sql = 
+        const sql =
             `WITH user_match_with_usernames AS (
 	            SELECT \`user\`.username, matched_user.username as matchedUsername, user_match.reason
 	            FROM user_match
@@ -404,7 +407,7 @@ app.get('/user-matches', verifyToken, async (req, res, next) => {
             CASE WHEN username < matchedUsername THEN matchedUsername ELSE username END as matchedUsername,
             reason
             FROM user_match_with_usernames;`;
-        
+
         const result = await queryPromiseAdapter(sql);
         return res.json(result);
     }
@@ -423,18 +426,18 @@ const getUnmatchedUserIdsWithBio = async () => {
             WHERE user_match.unmatchedTime IS NULL
         ) 
         ORDER BY bio.userId;`;
-        
+
     const result = await queryPromiseAdapter(sql);
     const unmatchedUserIds = result.map(obj => obj.userId);
-    return unmatchedUserIds;  
+    return unmatchedUserIds;
 }
 
-const getPreviousMatches = async() => {
+const getPreviousMatches = async () => {
     const sql = `SELECT user_match.userId, user_match.matchedUserId
     FROM user_match
     WHERE user_match.unmatchedTime IS NOT NULL
     ORDER BY user_match.userId;`;
-        
+
     const previousMatches = await queryPromiseAdapter(sql);
     return previousMatches;
     /* console.log(result)
@@ -451,16 +454,16 @@ app.post('/matching-sequence', async (req, res, next) => {
 
     const potentialMatches = {};
     unmatchedUserIdsWithBio.forEach(id => {
-        potentialMatches[id] = unmatchedUserIdsWithBio.filter(elem => elem !== id)        
+        potentialMatches[id] = unmatchedUserIdsWithBio.filter(elem => elem !== id)
     });
 
     // For each user id, remove the user ids that this user has been matched with before
-    for (const {userId, matchedUserId} of previousMatches) {
+    for (const { userId, matchedUserId } of previousMatches) {
         if (potentialMatches[userId]) {
             potentialMatches[userId] = potentialMatches[userId].filter(elem => elem != matchedUserId)
         }
     }
-    
+
     // now randomly make matches
     // To check if an id has already been matched, keep a set/list of newly matches user ids
     const newMatchedUserIds = [];
@@ -488,7 +491,7 @@ app.post('/matching-sequence', async (req, res, next) => {
 
 
 // If the PORT environment variable is not set in the computer, then use port 3000 by default
-server.listen(process.env.PORT || 3001, () => {
-    console.log(`Server is running on port ${process.env.PORT || 3001}`);
+server.listen(process.env.PORT || 3000, () => {
+    console.log(`Server is running on port ${process.env.PORT || 3000}`);
 });
 

@@ -51,7 +51,7 @@ export default function UserBioForm() {
         console.log(bioData);
 
         const metaDataResponse = await fetch(
-          "http://localhost:3000/user-meta-data",
+          "http://localhost:3000/user-metadata",
           {
             headers: {
               token: localStorage.getItem("token"),

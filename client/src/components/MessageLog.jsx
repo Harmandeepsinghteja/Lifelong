@@ -13,7 +13,7 @@ const MessageLog = () => {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    fetch("http://localhost:3000/user-meta-data", {
+    fetch("http://localhost:3000/user-metadata", {
       headers: {
         token: localStorage.getItem("token"),
       },
@@ -88,22 +88,19 @@ const MessageLog = () => {
           <div
             key={index}
             ref={index === messages.length - 1 ? messagesEndRef : null} // Set ref to last message
-            className={`flex ${
-              message.sender === userID ? "justify-end" : "justify-start"
-            } mb-2 sm:mb-4`}
+            className={`flex ${message.sender === userID ? "justify-end" : "justify-start"
+              } mb-2 sm:mb-4`}
           >
             <div
-              className={`max-w-[80%] sm:max-w-[70%] rounded-lg p-2 sm:p-3 ${
-                message.sender === userID ? "bg-zinc-600" : "bg-zinc-800"
-              }`}
+              className={`max-w-[80%] sm:max-w-[70%] rounded-lg p-2 sm:p-3 ${message.sender === userID ? "bg-zinc-600" : "bg-zinc-800"
+                }`}
             >
               <p className="text-sm sm:text-base whitespace-pre-wrap break-words">
                 {message.text}
               </p>
               <p
-                className={`text-xs sm:text-sm text-zinc-400 mt-1 ${
-                  message.sender === userID ? "text-right" : "text-left"
-                }`}
+                className={`text-xs sm:text-sm text-zinc-400 mt-1 ${message.sender === userID ? "text-right" : "text-left"
+                  }`}
               >
                 {formatTimestamp(message.timestamp)}
               </p>

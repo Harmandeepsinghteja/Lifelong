@@ -38,7 +38,11 @@ export default function LoginForm() {
     fetch("http://localhost:3000/login", {
       method: "post",
       body: JSON.stringify({ username: username, password: password }),
-      headers: { "Content-Type": "application/json" }, // Content-Type is in quotes because it has a '-'
+      headers: {
+        "Content-Type": "application/json",
+
+
+      }, // Content-Type is in quotes because it has a '-'
     })
       .then((response) => {
         responseStatus = response.status;
