@@ -1,12 +1,12 @@
 USE lifelong_db;
-
+-- the password is the hashed version 1234
 INSERT INTO users
-VALUES (1,'charlie','1234'),
-	(2,'snoopy','1234'),
-	(3,'linus','1234'),
-	(4,'lucy','1234'),
-	(5,'john','1234'),
-	(6,'joe','1234');
+VALUES (1,'charlie','$2b$10$n/kx5u.k1xtNzokB752OseDHr2tWz6R2O1hn61LQHXtoAH0kUohZW'),
+	(2,'snoopy','$2b$10$n/kx5u.k1xtNzokB752OseDHr2tWz6R2O1hn61LQHXtoAH0kUohZW'),
+	(3,'linus','$2b$10$n/kx5u.k1xtNzokB752OseDHr2tWz6R2O1hn61LQHXtoAH0kUohZW'),
+	(4,'lucy','$2b$10$n/kx5u.k1xtNzokB752OseDHr2tWz6R2O1hn61LQHXtoAH0kUohZW'),
+	(5,'john','$2b$10$n/kx5u.k1xtNzokB752OseDHr2tWz6R2O1hn61LQHXtoAH0kUohZW'),
+	(6,'joe','$2b$10$n/kx5u.k1xtNzokB752OseDHr2tWz6R2O1hn61LQHXtoAH0kUohZW');
 
 INSERT INTO bio 
 VALUES (1,99,'Hardware Engineer','Male','Polynesian','Antarctica','Easter Island','Single','Casual Chat','Weekly','I love coding, reading sci-fi novels, and hiking. Big foodie here!'),
