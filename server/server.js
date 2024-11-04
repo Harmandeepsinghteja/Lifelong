@@ -387,8 +387,8 @@ app.get('/message-history-of-current-match', verifyToken, attachUserIdToRequest,
     }
 });
 
-
-app.get('/user-matches', verifyToken, attachUserIdToRequest, async (req, res, next) => {
+// TODO: Implement verifyAdminToken, which decrypts the admin token and checks if the decrypted username matches the admin username
+app.get('/user-matches', verifyToken, async (req, res, next) => {
     try {
         // Get all user matches (both current and previous), but with the reverse version of each match eliminated
         const sql = 
@@ -411,6 +411,79 @@ app.get('/user-matches', verifyToken, attachUserIdToRequest, async (req, res, ne
     catch (err) {
         return res.status(500).json(`Server side error: ${err}`);
     }
+});
+
+
+const getUnmatchedUserIdsWithBio = async () => {
+    const sql = `SELECT bio.userId
+        FROM bio
+        WHERE bio.userId NOT IN (
+            SELECT user_match.userId
+            FROM user_match
+            WHERE user_match.unmatchedTime IS NULL
+        ) 
+        ORDER BY bio.userId;`;
+        
+    const result = await queryPromiseAdapter(sql);
+    const unmatchedUserIds = result.map(obj => obj.userId);
+    return unmatchedUserIds;  
+}
+
+const getPreviousMatches = async() => {
+    const sql = `SELECT user_match.userId, user_match.matchedUserId
+    FROM user_match
+    WHERE user_match.unmatchedTime IS NOT NULL
+    ORDER BY user_match.userId;`;
+        
+    const previousMatches = await queryPromiseAdapter(sql);
+    return previousMatches;
+    /* console.log(result)
+    const previousMatches = result.map(obj => [obj.userId, obj.matchedUserId]);
+    console.log(previousMatches);
+    return previousMatches;   */
+}
+
+
+// TODO: Implement verifyAdminToken, which decrypts the admin token and checks if the decrypted username matches the admin username
+app.post('/matching-sequence', async (req, res, next) => {
+    const unmatchedUserIdsWithBio = await getUnmatchedUserIdsWithBio();
+    const previousMatches = await getPreviousMatches();
+
+    const potentialMatches = {};
+    unmatchedUserIdsWithBio.forEach(id => {
+        potentialMatches[id] = unmatchedUserIdsWithBio.filter(elem => elem !== id)        
+    });
+
+    // For each user id, remove the user ids that this user has been matched with before
+    for (const {userId, matchedUserId} of previousMatches) {
+        if (potentialMatches[userId]) {
+            potentialMatches[userId] = potentialMatches[userId].filter(elem => elem != matchedUserId)
+        }
+    }
+    
+    // now randomly make matches
+    // To check if an id has already been matched, keep a set/list of newly matches user ids
+    const newMatchedUserIds = [];
+    const newMatchedUserIdPairs = [];
+    for (var userId in potentialMatches) {
+        userId = parseInt(userId);
+        if (newMatchedUserIds.includes(userId)) {
+            continue;
+        }
+        // Remove ids that are already matched from list of potential match ids
+        const potentialMatchIds = potentialMatches[userId].filter(elem => !newMatchedUserIds.includes(elem));
+        if (potentialMatchIds.length > 0) {
+            const matchedUserId = potentialMatchIds[Math.floor(Math.random() * potentialMatchIds.length)];
+            newMatchedUserIds.push(userId);
+            newMatchedUserIds.push(matchedUserId);
+            newMatchedUserIdPairs.push([userId, matchedUserId]);
+
+        }
+    }
+    // TODO: insert pairs in newMatchedUserIdPairs (as well as their corresponding reverse pairs) into user_matches table in database
+    console.log(potentialMatches);
+    return res.status(201).json(newMatchedUserIdPairs);
+
 });
 
 
