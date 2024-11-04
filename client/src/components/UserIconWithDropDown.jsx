@@ -19,17 +19,15 @@ export default function UserIconDropdown({ username }) {
   const firstInitial = username.charAt(0).toUpperCase();
 
   const handleLogout = () => {
-    if (!isLoggedIn) {
+    if (isLoggedIn) {
       localStorage.removeItem("token");
       window.location.reload(true); // Refreshes the current page, same as clicking the refresh button in your browser
     }
   };
 
   const handleUnmatch = () => {
-    if (window.confirm("Are you sure you want to unmatch? You will never be able to see your penpal once you unmatch.")) {
-
-    } else { }
-
+    // if (window.confirm("Are you sure you want to unmatch? You will never be able to see your penpal once you unmatch.")) {
+    // } else { }
   };
 
   const navigate = useNavigate();
