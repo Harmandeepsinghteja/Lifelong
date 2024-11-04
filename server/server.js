@@ -370,24 +370,49 @@ io.on('connection', async (socket) => {
 });
 
 
-
-app.get('/message-history-of-current-match', verifyToken, attachUserIdToRequest, async (req, res) => {
+app.get('/message-history-of-current-match', verifyToken, attachUserIdToRequest, async (req, res, next) => {
     try {
         // Get messages sent by the user or the matched user for their current match
-        var sql = `SELECT message.id, user_match.userId as senderId, message.content, message.createdTime
+        const sql = `SELECT message.id, user_match.userId as senderId, message.content, message.createdTime
             FROM message
             JOIN user_match on message.matchId = user_match.id
             WHERE (user_match.userId = ${req.userId} OR user_match.matchedUserId = ${req.userId}) AND
                 user_match.unmatchedTime IS NULL
             ORDER BY message.createdTime;`;
-        var result = await queryPromiseAdapter(sql);
-        console.log(result);
+        const result = await queryPromiseAdapter(sql);
         res.json(result);
     }
     catch (err) {
         return res.status(500).json(`Server side error: ${err}`);
     }
 });
+
+
+app.get('/user-matches', verifyToken, attachUserIdToRequest, async (req, res, next) => {
+    try {
+        // Get all user matches (both current and previous), but with the reverse version of each match eliminated
+        const sql = 
+            `WITH user_match_with_usernames AS (
+	            SELECT \`user\`.username, matched_user.username as matchedUsername, user_match.reason
+	            FROM user_match
+	            JOIN users as \`user\` on user_match.userId = user.id
+	            JOIN users as matched_user on user_match.matchedUserId = matched_user.id
+            )
+            -- Eliminate the reverse versions of each match
+            SELECT DISTINCT
+            CASE WHEN username >= matchedUsername THEN matchedUsername ELSE username END as username,
+            CASE WHEN username < matchedUsername THEN matchedUsername ELSE username END as matchedUsername,
+            reason
+            FROM user_match_with_usernames;`;
+        
+        const result = await queryPromiseAdapter(sql);
+        return res.json(result);
+    }
+    catch (err) {
+        return res.status(500).json(`Server side error: ${err}`);
+    }
+});
+
 
 // If the PORT environment variable is not set in the computer, then use port 3000 by default
 server.listen(process.env.PORT || 3001, () => {

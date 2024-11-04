@@ -30,8 +30,9 @@ DROP TABLE IF EXISTS user_match;
 
 CREATE TABLE user_match (
     id int PRIMARY KEY AUTO_INCREMENT,
-    userId int,
-    matchedUserId int,
+    userId int NOT NULL,
+    matchedUserId int NOT NULL,
+    reason VARCHAR(100),
     createdTime DATETIME NOT NULL,
     unmatchedTime DATETIME DEFAULT NULL,
     FOREIGN KEY (userId) REFERENCES users(id),
