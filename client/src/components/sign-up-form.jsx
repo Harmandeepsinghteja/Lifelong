@@ -25,10 +25,10 @@ export default function SignUpForm() {
   const [isPasswordValid, setIsPasswordValid] = useState("")
   const [invalidPasswordMessages, setInvalidPasswordMessages] = useState([])
 
-  useEffect(() => {
-    // Set dark mode on component mount
-    document.documentElement.classList.add("dark");
-  }, []);
+  // useEffect(() => {
+  //   // Set dark mode on component mount
+  //   document.documentElement.classList.add("dark");
+  // }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -47,12 +47,43 @@ export default function SignUpForm() {
       return;
     }
 
+    fetch("http://localhost:3000/register", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ username: username, password: password }),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        return response.json();
+      })
+      .then((response) => {
+        responseStatus = response.status;
+        return response.json();
+      })
+      .then((responsePayload) => {
+        if (responseStatus === 201) {
+          // Store the token in a cookie/local storage
+          localStorage.setItem("token", responsePayload.token);
+          setIsLoggedIn(true);
+          alert("Sign up success!");
+          navigate("/");
+        } else {
+          alert(responsePayload);
+        }
+      })
+      .catch((err) => {
+        setIsLoggedIn(false);
+        console.log(err);
+      });;
+
     // Here you would typically call your sign-up function
     console.log("Sign-up attempt with:", { email, username, password });
     // For demo purposes, let's simulate a successful sign-up
-    alert(
-      "Sign-up successful!"
-    );
+
   };
 
   return (

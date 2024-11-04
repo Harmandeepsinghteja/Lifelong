@@ -320,6 +320,19 @@ io.use((socket, next) => {
     });
 });
 
+io.use(async (socket, next) => {
+    try {
+        const sql = 'SELECT id FROM users WHERE username = ?';
+        const result = await queryPromiseAdapterWithPlaceholders(sql, [socket.username]);
+        socket.userId = result[0].id;
+        next();
+    }
+    catch (err) {
+        console.log(err)
+        return err;
+    }
+});
+
 const getCurrentDateTimeAsString = () => {
     var dateTime = new Date();
     dateTime = dateTime.getUTCFullYear() + '-' +
@@ -392,8 +405,8 @@ io.on('connection', async (socket) => {
             result = await queryPromiseAdapterWithPlaceholders(sql, [matchId, message.content, createdTime]);
 
             // Emit the message to both the user and the matched user
-            io.to(matchedUsername).emit('message', { content: message.content, createdTime: createdTime });
-            io.to(socket.username).emit('message', { content: message.content, createdTime: createdTime });
+            io.to(matchedUsername).emit('message', { senderId: socket.userId, content: message.content, createdTime: createdTime });
+            io.to(socket.username).emit('message', { senderId: socket.userId, content: message.content, createdTime: createdTime });
 
         }
         catch (err) {
