@@ -14,7 +14,6 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 
 export default function AdminLogIn() {
-
   const [adminUsername, setAdminUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -60,7 +59,7 @@ export default function AdminLogIn() {
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto mt-20">
+    <Card className="w-full max-w-md mx-auto mt-20  text-zinc-200 bg-zinc-950">
       <CardHeader>
         <CardTitle className="text-xl xl:text-4xl font-bold">Login</CardTitle>
         <CardDescription>
