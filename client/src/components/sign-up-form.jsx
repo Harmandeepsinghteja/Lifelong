@@ -25,10 +25,10 @@ export default function SignUpForm() {
   const [isPasswordValid, setIsPasswordValid] = useState("")
   const [invalidPasswordMessages, setInvalidPasswordMessages] = useState([])
 
-  useEffect(() => {
-    // Set dark mode on component mount
-    document.documentElement.classList.add("dark");
-  }, []);
+  // useEffect(() => {
+  //   // Set dark mode on component mount
+  //   document.documentElement.classList.add("dark");
+  // }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -47,16 +47,46 @@ export default function SignUpForm() {
       return;
     }
 
+    fetch("http://localhost:3000/register", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ username: username, password: password }),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        return response.json();
+      })
+      .then((response) => {
+        responseStatus = response.status;
+        return response.json();
+      })
+      .then((responsePayload) => {
+        if (responseStatus === 201) {
+          // Store the token in a cookie/local storage
+          localStorage.setItem("token", responsePayload.token);
+          setIsLoggedIn(true);
+          alert("Sign up success!");
+          navigate("/");
+        } else {
+          alert(responsePayload);
+        }
+      })
+      .catch((err) => {
+        setIsLoggedIn(false);
+        console.log(err);
+      });;
+
     // Here you would typically call your sign-up function
     console.log("Sign-up attempt with:", { email, username, password });
     // For demo purposes, let's simulate a successful sign-up
-    alert(
-      "Sign-up successful!"
-    );
+
   };
 
   return (
-    // <div className="h-fit  flex  items-center self-center justify-center bg-zinc-900">
     <Card className="w-full self-center max-w-md bg-zinc-800 text-zinc-100 my-4">
       <CardHeader>
         <CardTitle className="text-2xl font-bold">Sign Up</CardTitle>
@@ -121,6 +151,15 @@ export default function SignUpForm() {
             hideIcon={true}
           /> : <></>}
 
+          <div className="p-32 overflow-y-scroll overscroll-x-none border-zinc-500 border ">
+            sample paragraph
+          </div>
+          <div>
+
+            <label for="subscribe">I consent:</label> <input type="checkbox" id="subscribe" name="subscribe" value="yes"></input>
+          </div>
+
+
           {error && (
             <Alert
               variant="destructive"
@@ -147,6 +186,5 @@ export default function SignUpForm() {
         </Link>
       </CardFooter>
     </Card>
-    // </div>
   );
 }

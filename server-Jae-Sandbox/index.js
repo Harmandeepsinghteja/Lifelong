@@ -80,7 +80,7 @@ app.post("/admin-login", (req, res, next) => {
   }
 });
 
-app.get("/user-meta-data", (req, res, next) => {
+app.get("/user-metadata", (req, res, next) => {
   const token = req.headers.token;
   jwt.verify(token, SECRET_KEY, (err, decoded) => {
     if (err) {
@@ -134,10 +134,10 @@ app.get("/user-matches", (req, res) => {
       matchedUsername: "UserA",
       reason: "Shared Interests",
     },
-    { 
+    {
       username: "User2",
       matchedUsername: "UserB",
-      reason: "Proximity" 
+      reason: "Proximity"
     },
     {
       username: "User3",
@@ -150,7 +150,7 @@ app.get("/user-matches", (req, res) => {
   // });
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 server.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
 });
