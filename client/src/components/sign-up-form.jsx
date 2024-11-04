@@ -56,7 +56,6 @@ export default function SignUpForm() {
   };
 
   return (
-    // <div className="h-fit  flex  items-center self-center justify-center bg-zinc-900">
     <Card className="w-full self-center max-w-md bg-zinc-800 text-zinc-100 my-4">
       <CardHeader>
         <CardTitle className="text-2xl font-bold">Sign Up</CardTitle>
@@ -121,6 +120,15 @@ export default function SignUpForm() {
             hideIcon={true}
           /> : <></>}
 
+          <div className="p-32 overflow-y-scroll overscroll-x-none border-zinc-500 border ">
+            sample paragraph
+          </div>
+          <div>
+
+            <label for="subscribe">I consent:</label> <input type="checkbox" id="subscribe" name="subscribe" value="yes"></input>
+          </div>
+
+
           {error && (
             <Alert
               variant="destructive"
@@ -147,6 +155,5 @@ export default function SignUpForm() {
         </Link>
       </CardFooter>
     </Card>
-    // </div>
   );
 }

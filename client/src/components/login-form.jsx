@@ -31,6 +31,7 @@ export default function LoginForm() {
       return;
     }
 
+
     // Here you would typically call your authentication function
     console.log("Login attempt with:", { username, password });
 
@@ -40,7 +41,6 @@ export default function LoginForm() {
       body: JSON.stringify({ username: username, password: password }),
       headers: {
         "Content-Type": "application/json",
-
 
       }, // Content-Type is in quotes because it has a '-'
     })

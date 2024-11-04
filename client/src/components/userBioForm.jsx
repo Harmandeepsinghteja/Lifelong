@@ -59,7 +59,7 @@ export default function UserBioForm() {
           }
         );
         const metaData = await metaDataResponse.json();
-        setIsBioComplete(true);
+        setIsBioComplete(metaData.bioComplete);
         console.log(metaData);
       } catch (error) {
         setError("Error fetching data");
@@ -114,11 +114,12 @@ export default function UserBioForm() {
     alert("Submitted successfully!");
 
     if (isBioComplete) {
+      console.log("Patch started")
       fetch("http://localhost:3000/bio", {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          token: localStorage.getItem("token"),
         },
         body: JSON.stringify(bioData),
       })
@@ -131,17 +132,21 @@ export default function UserBioForm() {
         .then((data) => {
           console.log("Bio updated:", data);
           alert("Updated successfully!");
+          setIsBioComplete(true)
+
         })
         .catch((error) => {
           setError("Error updating bio");
           console.log(error);
         });
     } else {
+      console.log("starting post")
       fetch("http://localhost:3000/bio", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          token: localStorage.getItem("token"),
+
         },
         body: JSON.stringify(bioData),
       })
@@ -154,6 +159,7 @@ export default function UserBioForm() {
         .then((data) => {
           console.log("Bio submitted:", data);
           alert("Submitted successfully!");
+          setIsBioComplete(true)
         })
         .catch((error) => {
           setError("Error submitting bio");

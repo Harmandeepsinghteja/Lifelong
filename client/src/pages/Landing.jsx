@@ -28,7 +28,6 @@ const Landing = () => {
 
           if (!data.bioComplete) {
             navigate('/bio');
-
           }
 
           setMatchedUsername(data.matchedUsername);

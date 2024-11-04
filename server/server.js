@@ -164,6 +164,7 @@ const attachBioAsList = (req, res, next) => {
 //         (The bio will be created for the user associated with the token).
 // Alternate Output: Some other status like 404 or 500, and the response will contain the error message.
 app.post('/bio', verifyToken, attachUserIdToRequest, verifyBioPostRequestBody, attachBioAsList, (req, res, next) => {
+    console.log("recived post request from client")
     const bioAttributesWithUserId = ['userId'].concat(bioAttributes);
     const sql = `INSERT INTO bio (${bioAttributesWithUserId.toString()}) 
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
@@ -339,12 +340,33 @@ The message object must be of the format:
 */
 io.on('connection', async (socket) => {
     socket.join(socket.username);
+
+    socket.on('messageHistory', async (message) => {
+        console.log('srat messageHistory')
+        try {
+            // Get messages sent by the user or the matched user for their current match
+            const sql = `SELECT message.id, user_match.userId as senderId, message.content, message.createdTime
+                FROM message
+                JOIN user_match on message.matchId = user_match.id
+                WHERE (user_match.userId = ${socket.userId} OR user_match.matchedUserId = ${socket.userId}) AND
+                    user_match.unmatchedTime IS NULL
+                ORDER BY message.createdTime;`;
+            const result = await queryPromiseAdapter(sql);
+            io.to(socket.username).emit('messageHistory', result);
+            console.log(result)
+        }
+        catch (err) {
+            console.log(err)
+            return err;
+        }
+    });
+
     socket.on('message', async (message) => {
 
         try {
             // Get current match id of user
             var sql = `
-                SELECT user_match.id
+                SELECT user_match.id, user_match.matchedUserId
                 FROM user_match
                 JOIN users on users.id = user_match.userId
                 WHERE users.username = '${socket.username}' AND user_match.unmatchedTime IS NULL`;
@@ -354,6 +376,14 @@ io.on('connection', async (socket) => {
                 return new Error('Could not find current match id of user');
             }
             const matchId = result[0].id;
+            const matchedUserId = result[0].matchedUserId;
+
+            // Get username of matched user
+            sql = `SELECT users.username 
+                FROM users
+                WHERE id = ${matchedUserId};`;
+            result = await queryPromiseAdapter(sql);
+            const matchedUsername = result[0].username;
 
             // Insert the message into the message table
             const createdTime = getCurrentDateTimeAsString();
@@ -361,8 +391,10 @@ io.on('connection', async (socket) => {
                 VALUES (?, ?, ?);`;
             result = await queryPromiseAdapterWithPlaceholders(sql, [matchId, message.content, createdTime]);
 
-            // Emit the message to the matched user
-            io.to(message.matchedUsername).emit('message', message.content);
+            // Emit the message to both the user and the matched user
+            io.to(matchedUsername).emit('message', { content: message.content, createdTime: createdTime });
+            io.to(socket.username).emit('message', { content: message.content, createdTime: createdTime });
+
         }
         catch (err) {
             console.log(err)
@@ -371,6 +403,42 @@ io.on('connection', async (socket) => {
 
     });
 });
+
+//JKJK
+// io.on('connection', async (socket) => {
+//     socket.join(socket.username);
+//     socket.on('message', async (message) => {
+
+//         try {
+//             // Get current match id of user
+//             var sql = `
+//                 SELECT user_match.id
+//                 FROM user_match
+//                 JOIN users on users.id = user_match.userId
+//                 WHERE users.username = '${socket.username}' AND user_match.unmatchedTime IS NULL`;
+
+//             var result = await queryPromiseAdapter(sql);
+//             if (result.length === 0) {
+//                 return new Error('Could not find current match id of user');
+//             }
+//             const matchId = result[0].id;
+
+//             // Insert the message into the message table
+//             const createdTime = getCurrentDateTimeAsString();
+//             sql = `INSERT INTO message (matchId, content, createdTime)
+//                 VALUES (?, ?, ?);`;
+//             result = await queryPromiseAdapterWithPlaceholders(sql, [matchId, message.content, createdTime]);
+
+//             // Emit the message to the matched user
+//             io.to(message.matchedUsername).emit('message', message.content);
+//         }
+//         catch (err) {
+//             console.log(err)
+//             return err;
+//         }
+
+//     });
+// });
 
 
 app.get('/message-history-of-current-match', verifyToken, attachUserIdToRequest, async (req, res, next) => {
