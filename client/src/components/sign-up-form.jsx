@@ -160,8 +160,62 @@ export default function SignUpForm() {
             <></>
           )}
 
-          <div className="p-32 overflow-y-scroll overscroll-x-none border-zinc-500 border ">
-            sample paragraph
+          <div className=" p-1 text-sm  flex flex-col gap-2 overflow-y-scroll overscroll-x-none border-zinc-500 border h-48 ">
+            <span className="text-lg font-bold self-center"> User Privacy Agreement</span>
+            <span className=" self-center">Last Updated: Nov 4, 2024</span>
+            <span>
+              Welcome to Lifelong! We are committed to protecting your privacy and ensuring your trust. This Privacy Agreement explains how we collect, use, and protect your information to help you connect with suitable penpals.
+            </span>
+            <span>
+
+              <span className="text-lg font-bold self-center"> Information</span><br />
+
+              We Collect
+              To provide our services, we collect and use certain types of information from our users. This includes:
+            </span>
+
+            <span>
+              Personal Information: Such as email address, age, country, language preferences, interests, and any other information you provide that can help us match you with compatible penpals.
+              User ID: A unique identifier assigned to you, which allows us to securely manage and protect your data.
+              How We Use Your Information
+              Our goal is to provide a safe, personalized, and enjoyable penpal experience. To do this, we use the information collected in the following ways:
+            </span>
+
+            <span>
+              Matching Mechanism: We use advanced Large Language Models (LLMs) to find compatible penpals based on your preferences and profile data. Please note that we do not include your name in any requests sent to our matching service providers, such as ChatGPT or Gemini; only your user ID is included in these interactions.
+              Third-Party Data Sharing
+              We prioritize data privacy and do not sell, lease, or otherwise distribute your information to unauthorized third parties. Information sent to our matching service providers, ChatGPT or Gemini, includes only non-identifiable user IDs to protect your privacy.
+            </span>
+
+            <span>
+              <span className=" font-bold">Data Security<br /> </span>
+              We take appropriate technical and organizational measures to protect your personal information from unauthorized access, use, or disclosure. All data transmission is encrypted, and access to your personal information is restricted to authorized personnel only.
+            </span>
+
+            <span>
+
+              <span className=" font-bold">Your Rights and Choices<br /> </span>
+              You have the right to:
+            </span>
+
+            <span>
+              Access and update your personal information within the app.
+              Delete your account and associated data.
+              Withdraw your consent to data processing.
+              To exercise these rights, please contact our support team at support@lifelong.com
+            </span>
+
+            <span>
+              Changes to This Privacy Agreement:
+              We may update this Privacy Agreement periodically to reflect changes in our practices. We will notify you of any significant changes by posting the new Privacy Agreement in the app.
+            </span>
+
+            <span>
+              <span className=" font-bold">Contact Us<br /> </span>
+
+              If you have any questions or concerns about this Privacy Agreement, please reach out to us via the email above.
+            </span>
+
           </div>
           <div className="flex flex-row  items-center justify-center">
             <label htmlFor="consent" className="italic text-sm">

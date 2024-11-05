@@ -33,8 +33,8 @@ CREATE TABLE user_match (
     userId int NOT NULL,
     matchedUserId int NOT NULL,
     reason VARCHAR(100),
-    createdTime DATETIME NOT NULL,
-    unmatchedTime DATETIME DEFAULT NULL,
+    createdTime TIMESTAMP NOT NULL,
+    unmatchedTime TIMESTAMP DEFAULT NULL,
     FOREIGN KEY (userId) REFERENCES users(id),
     FOREIGN KEY (matchedUserId) REFERENCES users(id)
 );
@@ -43,7 +43,7 @@ CREATE TABLE message (
     id INT PRIMARY KEY AUTO_INCREMENT,
     matchId INT NOT NULL,
     content TEXT NOT NULL,
-    createdTime DATETIME NOT NULL,
+    createdTime TIMESTAMP NOT NULL,
     FOREIGN KEY (matchId) REFERENCES user_match(id) 
 );
 
@@ -61,8 +61,8 @@ CREATE TABLE message (
 
 -- CREATE TABLE matches (
 --   id int PRIMARY KEY AUTO_INCREMENT,
---   createdTime DATETIME NOT NULL,
---   unmatchedTime DATETIME DEFAULT NULL
+--   createdTime TIMESTAMP NOT NULL,
+--   unmatchedTime TIMESTAMP DEFAULT NULL
 -- );
 
 
