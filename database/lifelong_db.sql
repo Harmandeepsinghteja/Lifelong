@@ -32,9 +32,9 @@ CREATE TABLE user_match (
     id int PRIMARY KEY AUTO_INCREMENT,
     userId int NOT NULL,
     matchedUserId int NOT NULL,
-    reason VARCHAR(100),
-    createdTime TIMESTAMP NOT NULL,
-    unmatchedTime TIMESTAMP DEFAULT NULL,
+    reason VARCHAR(1000),
+    createdTime DATETIME NOT NULL,
+    unmatchedTime DATETIME DEFAULT NULL,
     FOREIGN KEY (userId) REFERENCES users(id),
     FOREIGN KEY (matchedUserId) REFERENCES users(id)
 );
