@@ -42,17 +42,6 @@ const db = mysql.createConnection({
   port: process.env.DB_PORT,
 });
 
-// const testConnection = () => {
-//   db.connect((err) => {
-//     if (err) {
-//       console.error("Error connecting to the database:", err);
-//       return;
-//     }
-//     console.log("Connected to the database successfully!");
-//   });
-// };
-
-// testConnection();
 
 
 
@@ -102,19 +91,6 @@ const fetchUsersData = (callback) => {
 
 
 
-// Test function to test fetchUsersData
-const testFetchUsersData = () => {
-  fetchUsersData((err, usersData) => {
-    if (err) {
-      console.error("Error fetching user data:", err);
-      return;
-    }
-    console.log("Fetched user data:", usersData);
-  });
-};
-
-// Call the test function
-testFetchUsersData();
 
 
 // Function to send user data to ChatGPT API and get matches
@@ -302,8 +278,9 @@ const insertMatchesIntoDB = (matches) => {
 
 
 // Call the matchUsers function and then insert the matches into the database
-matchUsers().then(async (matches) => {
+const processMatches = async () => {
   try {
+    const matches = await matchUsers();
     // Extract the matches array from the JSON object
     const matchesArray = matches.matches;
     console.log("Matches:", matchesArray);
@@ -313,10 +290,10 @@ matchUsers().then(async (matches) => {
     }
     // Call the function with the extracted array
     await insertMatchesIntoDB(matchesArray);
-    
+    console.log("Matches inserted successfully!");
   } catch (err) {
     console.error("Error inserting matches:", err);
   }
-});
+};
 
-module.exports = { matchUsers };
+module.exports = { processMatches };
