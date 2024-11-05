@@ -83,7 +83,7 @@ app.post("/admin-login", (req, res, next) => {
   }
 });
 
-app.get("/user-meta-data", (req, res, next) => {
+app.get("/user-metadata", (req, res, next) => {
   const token = req.headers.token;
   jwt.verify(token, SECRET_KEY, (err, decoded) => {
     if (err) {
@@ -94,7 +94,7 @@ app.get("/user-meta-data", (req, res, next) => {
         userID: 1,
         bioComplete: true,
         matchedUserID: 2,
-        matchedUsername: "",
+        matchedUsername: "Jason",
       });
     }
   });
@@ -140,7 +140,7 @@ app.get("/user-matches", (req, res) => {
     {
       username: "User2",
       matchedUsername: "UserB",
-      reason: "Proximity",
+      reason: "Proximity" 
     },
     {
       username: "User3",
@@ -166,7 +166,20 @@ app.post("/match-users", async (req, res) => {
 });
 
 
-const PORT = process.env.PORT || 3000;
+// Endpoint to get user matches
+app.post("/match-users", async (req, res) => {
+  const usersData = req.body;
+
+  try {
+    const matches = await matchUsers(usersData);
+    res.json({ matches });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
+const PORT = process.env.PORT || 3001;
 server.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
 });

@@ -14,11 +14,10 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 
 export default function AdminLogIn() {
-  const { isAdminLoggedIn, setIsAdminLoggedIn } = useSharedState();
-
   const [adminUsername, setAdminUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const { isLoggedIn, setIsLoggedIn } = useSharedState();
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -36,7 +35,7 @@ export default function AdminLogIn() {
     fetch("http://localhost:3000/admin-login", {
       method: "post",
       body: JSON.stringify({
-        adminUsername: adminUsername,
+        username: adminUsername,
         password: password,
       }),
       headers: { "Content-Type": "application/json" },
@@ -47,20 +46,20 @@ export default function AdminLogIn() {
       })
       .then((data) => {
         if (responseStatus === 200) {
-          localStorage.setItem("adminToken", data.adminToken);
-          setIsAdminLoggedIn(true);
+          localStorage.setItem("admin_token", data.admin_token);
+          setIsLoggedIn(true);
         } else {
           alert(data);
         }
       })
       .catch((err) => {
-        setIsAdminLoggedIn(false);
+        setIsLoggedIn(false);
         console.log(err);
       });
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto mt-20">
+    <Card className="w-full max-w-md mx-auto mt-20  text-zinc-200 bg-zinc-950">
       <CardHeader>
         <CardTitle className="text-xl xl:text-4xl font-bold">Login</CardTitle>
         <CardDescription>
