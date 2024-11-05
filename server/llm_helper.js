@@ -1,17 +1,18 @@
-const express = require("express");
-const dotenv = require("dotenv");
-const axios = require("axios");
-const { GoogleGenerativeAI } = require("@google/generative-ai");
-const mysql = require("mysql2"); 
-const fetch = require("node-fetch"); // Ensure you have node-fetch installed
-// const db = require("./db"); // Assuming you have a db module for database operations
-const cors = require("cors");
-const jwt = require("jsonwebtoken");
-const { createServer } = require("http");
-const { Server } = require("socket.io");
-// Get Keys from .env file
+import express from "express";
+import dotenv from "dotenv";
+import axios from "axios";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import mysql from "mysql2";
+import fetch from "node-fetch"; // Ensure you have node-fetch installed
+// import db from "./db"; // Assuming you have a db module for database operations
+import cors from "cors";
+import jwt from "jsonwebtoken";
+import { createServer } from "http";
+import { Server } from "socket.io";
 
-dotenv.config({ path: "../.env" });
+// Get Keys from .env file
+dotenv.config({ path: ".env" });
+
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const DB_HOST = process.env.DB_HOST;
@@ -296,4 +297,4 @@ const processMatches = async () => {
   }
 };
 
-module.exports = { processMatches };
+export default processMatches;
