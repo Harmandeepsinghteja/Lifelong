@@ -14,19 +14,26 @@ export default function AdminContent() {
   const [tableData, setTableData] = useState([]);
   const [userCount, setUserCount] = useState(0);
   const [matchedUserCount, setMatchedUserCount] = useState(0);
+
   const { isLoggedIn, setIsLoggedIn } = useSharedState();
 
   const fetchData = async () => {
-    const adminToken = localStorage.getItem("adminToken");
+    const admin_token = localStorage.getItem("admin_token");
     const response = await fetch("http://localhost:3000/user-matches", {
       headers: {
-        adminToken: adminToken,
+        token: admin_token,
       },
     });
     const data = await response.json();
     setTableData(data);
     setUserCount(data.length);
     setMatchedUserCount(data.filter((item) => item.matchedUsername).length);
+
+    setUserCount(data.filter((match) => match.username).length);
+    setMatchedUserCount(
+      data.filter((match) => Boolean(match.matchedUsername)).length
+    );
+
     console.log(data);
 
     console.log(userCount);
@@ -35,7 +42,7 @@ export default function AdminContent() {
 
   const handleLogout = () => {
     if (isLoggedIn) {
-      localStorage.removeItem("adminToken");
+      localStorage.removeItem("admin_token");
       window.location.reload(true); // Refreshes the current page, same as clicking the refresh button in your browser
     }
   };
@@ -50,7 +57,8 @@ export default function AdminContent() {
         <div className="flex flex-row justify-between items-end mb-4">
           <div className="flex flex-row items-end">
             <h1 className="text-xl md:text-6xl font-bold  mr-12">
-              {matchedUserCount}/{userCount} users matched
+              {matchedUserCount * 2}/{userCount + matchedUserCount} users
+              matched
             </h1>
 
             <Button

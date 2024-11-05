@@ -13,22 +13,27 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import { Link } from "react-router-dom";
-import PasswordChecklist from "react-password-checklist"
+import PasswordChecklist from "react-password-checklist";
 import { isValid } from "date-fns";
+import { useNavigate } from "react-router-dom";
+import { useSharedState } from "../MyContext";
 
 export default function SignUpForm() {
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [passwordAgain, setPasswordAgain] = useState("")
-  const [isPasswordValid, setIsPasswordValid] = useState("")
-  const [invalidPasswordMessages, setInvalidPasswordMessages] = useState([])
+  const [passwordAgain, setPasswordAgain] = useState("");
+  const [isPasswordValid, setIsPasswordValid] = useState("");
+  const [isConsentChecked, setIsConsentChecked] = useState("");
+  const [invalidPasswordMessages, setInvalidPasswordMessages] = useState([]);
+  const { isLoggedIn, setIsLoggedIn } = useSharedState();
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    // Set dark mode on component mount
-    document.documentElement.classList.add("dark");
-  }, []);
+  // useEffect(() => {
+  //   // Set dark mode on component mount
+  //   document.documentElement.classList.add("dark");
+  // }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -47,16 +52,43 @@ export default function SignUpForm() {
       return;
     }
 
+    if (!isConsentChecked) {
+      alert("Please consent to the agreeemnt to sign up.");
+      return;
+    }
+
+    fetch("http://localhost:3000/register", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ username: username, password: password }),
+    })
+      .then(async (response) => {
+        if (!response.ok) {
+          const errorData = await response.json();
+          alert(errorData.error);
+          return;
+        }
+        return response.json();
+      })
+      .then((responsePayload) => {
+        localStorage.setItem("token", responsePayload.token);
+        setIsLoggedIn(true);
+        alert("Sign up success!");
+        navigate("/");
+      })
+      .catch((err) => {
+        setIsLoggedIn(false);
+        console.log(err);
+      });
+
     // Here you would typically call your sign-up function
     console.log("Sign-up attempt with:", { email, username, password });
     // For demo purposes, let's simulate a successful sign-up
-    alert(
-      "Sign-up successful!"
-    );
   };
 
   return (
-    // <div className="h-fit  flex  items-center self-center justify-center bg-zinc-900">
     <Card className="w-full self-center max-w-md bg-zinc-800 text-zinc-100 my-4">
       <CardHeader>
         <CardTitle className="text-2xl font-bold">Sign Up</CardTitle>
@@ -110,22 +142,43 @@ export default function SignUpForm() {
             />
           </div>
 
-          {password ? <PasswordChecklist
-            className="flex flex-col text-sm my-0 space-y-0"
-            rules={["minLength", "specialChar", "number", "capital", "match"]}
-            minLength={5}
-            value={password}
-            valueAgain={passwordAgain}
-            onChange={(isValid, failedRules) => { setIsPasswordValid(isValid); setInvalidPasswordMessages(failedRules) }}
-            invalidTextColor="red"
-            hideIcon={true}
-          /> : <></>}
+          {password ? (
+            <PasswordChecklist
+              className="flex flex-col text-sm my-0 space-y-0"
+              rules={["minLength", "specialChar", "number", "capital", "match"]}
+              minLength={5}
+              value={password}
+              valueAgain={passwordAgain}
+              onChange={(isValid, failedRules) => {
+                setIsPasswordValid(isValid);
+                setInvalidPasswordMessages(failedRules);
+              }}
+              invalidTextColor="red"
+              hideIcon={true}
+            />
+          ) : (
+            <></>
+          )}
+
+          <div className="p-32 overflow-y-scroll overscroll-x-none border-zinc-500 border ">
+            sample paragraph
+          </div>
+          <div className="flex flex-row  items-center justify-center">
+            <label htmlFor="consent" className="italic text-sm">
+              I consent:
+            </label>{" "}
+            <input
+              type="checkbox"
+              className="ml-2"
+              id="consent"
+              name="consent"
+              checked={isConsentChecked}
+              onChange={(e) => setIsConsentChecked(e.target.checked)}
+            ></input>
+          </div>
 
           {error && (
-            <Alert
-              variant="destructive"
-              className="bg-red-900 border-red-800"
-            >
+            <Alert variant="destructive" className="bg-red-900 border-red-800">
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>{error}</AlertDescription>
             </Alert>
@@ -147,6 +200,5 @@ export default function SignUpForm() {
         </Link>
       </CardFooter>
     </Card>
-    // </div>
   );
 }

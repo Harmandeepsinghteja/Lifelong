@@ -11,7 +11,7 @@ export default function Navbar() {
 
   useEffect(() => {
     if (isLoggedIn) {
-      fetch("http://localhost:3000/user-meta-data", {
+      fetch("http://localhost:3000/user-metadata", {
         headers: {
           token: localStorage.getItem("token"),
         },

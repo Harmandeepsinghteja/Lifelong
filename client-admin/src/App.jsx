@@ -9,7 +9,7 @@ function App() {
   const { isLoggedIn, setIsLoggedIn } = useSharedState();
 
   useLayoutEffect(() => {
-    if (localStorage.getItem("adminToken")) {
+    if (localStorage.getItem("admin_token")) {
       setIsLoggedIn(true);
     } else {
       setIsLoggedIn(false);

@@ -14,6 +14,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import SelectInput from "./select-input";
 import { countries } from "../countries.js";
+import { useNavigate } from "react-router-dom";
 
 export default function UserBioForm() {
   const [isBioComplete, setIsBioComplete] = useState(false);
@@ -28,6 +29,7 @@ export default function UserBioForm() {
   const [messageFrequency, setMessageFrequency] = useState("");
   const [bio, setBio] = useState("");
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -51,7 +53,7 @@ export default function UserBioForm() {
         console.log(bioData);
 
         const metaDataResponse = await fetch(
-          "http://localhost:3000/user-meta-data",
+          "http://localhost:3000/user-metadata",
           {
             headers: {
               token: localStorage.getItem("token"),
@@ -59,7 +61,7 @@ export default function UserBioForm() {
           }
         );
         const metaData = await metaDataResponse.json();
-        setIsBioComplete(true);
+        setIsBioComplete(metaData.bioComplete);
         console.log(metaData);
       } catch (error) {
         setError("Error fetching data");
@@ -111,14 +113,14 @@ export default function UserBioForm() {
       messageFrequency,
       bio,
     });
-    alert("Submitted successfully!");
 
     if (isBioComplete) {
+      console.log("Patch started");
       fetch("http://localhost:3000/bio", {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          token: localStorage.getItem("token"),
         },
         body: JSON.stringify(bioData),
       })
@@ -126,22 +128,23 @@ export default function UserBioForm() {
           if (!response.ok) {
             throw new Error("Network response was not ok");
           }
-          return response.json();
         })
-        .then((data) => {
-          console.log("Bio updated:", data);
+        .then(() => {
           alert("Updated successfully!");
+          setIsBioComplete(true);
+          navigate("/");
         })
         .catch((error) => {
           setError("Error updating bio");
           console.log(error);
         });
     } else {
+      console.log("starting post");
       fetch("http://localhost:3000/bio", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          token: localStorage.getItem("token"),
         },
         body: JSON.stringify(bioData),
       })
@@ -149,11 +152,11 @@ export default function UserBioForm() {
           if (!response.ok) {
             throw new Error("Network response was not ok");
           }
-          return response.json();
         })
-        .then((data) => {
-          console.log("Bio submitted:", data);
-          alert("Submitted successfully!");
+        .then(() => {
+          alert("Filled out successfully!");
+          setIsBioComplete(true);
+          navigate("/");
         })
         .catch((error) => {
           setError("Error submitting bio");
