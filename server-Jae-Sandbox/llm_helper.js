@@ -66,12 +66,22 @@ const fetchUsersData = (callback) => {
     console.log("Connected to the database successfully!");
 
     const query = `
-      SELECT u.id as userId, ${bioAttributes
-        .map((attr) => `b.${attr}`)
+      SELECT DISTINCT users.id as userId, ${bioAttributes
+        .map((attr) => `bio.${attr}`)
         .join(", ")}
-      FROM users u
-      JOIN bio b ON u.id = b.userId
+      FROM users
+      JOIN bio ON users.id = bio.userId
+      WHERE users.id NOT IN (
+        SELECT user_match.userId
+        FROM user_match
+        WHERE user_match.unmatchedTime IS NULL
+      )
+      AND users.id IN (
+        SELECT bio.userId
+        FROM bio
+      );
     `;
+
     db.query(query, (err, results) => {
       if (err) {
         console.error("Error fetching user data:", err);
@@ -89,6 +99,8 @@ const fetchUsersData = (callback) => {
     });
   });
 };
+
+
 
 // Test function to test fetchUsersData
 const testFetchUsersData = () => {
@@ -237,26 +249,74 @@ const matchUsers = async () => {
   }
 };
 
-const insertMatchesIntoDB = async (matches) => {
-  const db = getDatabaseConnection(); // Replace with your actual DB connection function
-  const insertQuery = `
-    INSERT INTO user_match (userId, matchedUserId, createdTime)
-    VALUES (?, ?, ?)
-  `;
 
-  const currentTime = new Date().toISOString();
-
-  for (const match of matches) {
-    await db.run(insertQuery, [match.userId, match.matchUserId, currentTime]);
-  }
+const getCurrentDateTimeAsString = () => {
+  var dateTime = new Date();
+  dateTime =
+    dateTime.getUTCFullYear() +
+    "-" +
+    ("00" + (dateTime.getUTCMonth() + 1)).slice(-2) +
+    "-" +
+    ("00" + dateTime.getUTCDate()).slice(-2) +
+    " " +
+    ("00" + dateTime.getUTCHours()).slice(-2) +
+    ":" +
+    ("00" + dateTime.getUTCMinutes()).slice(-2) +
+    ":" +
+    ("00" + dateTime.getUTCSeconds()).slice(-2);
+  return dateTime;
 };
 
 
-// Call the matchUsers function
-matchUsers().then(result => {
-  console.log("Match result:", result);
-}).catch(err => {
-  console.error("Error matching users:", err);
+const insertMatchesIntoDB = (matches) => {
+  const insertQuery = `INSERT INTO user_match (userId, matchedUserId, createdTime, reason) VALUES (?, ?, ?, ?)`;
+  const currentTime = getCurrentDateTimeAsString();
+
+  matches.forEach((match) => {
+    db.query(
+      insertQuery,
+      [match.userId, match.matchUserId, currentTime, match.reason],
+      (err, results) => {
+        if (err) {
+          console.error("Error inserting match:", err);
+          return;
+        }
+        console.log("Match inserted:", results);
+
+        // Insert again with userId and matchUserId swapped
+        db.query(
+          insertQuery,
+          [match.matchUserId, match.userId, currentTime, match.reason],
+          (err, results) => {
+            if (err) {
+              console.error("Error inserting swapped match:", err);
+              return;
+            }
+            console.log("Swapped match inserted:", results);
+          }
+        );
+      }
+    );
+  });
+};
+
+
+// Call the matchUsers function and then insert the matches into the database
+matchUsers().then(async (matches) => {
+  try {
+    // Extract the matches array from the JSON object
+    const matchesArray = matches.matches;
+    console.log("Matches:", matchesArray);
+    // Ensure matchesArray is an array
+    if (!Array.isArray(matchesArray)) {
+      throw new TypeError("matches is not iterable");
+    }
+    // Call the function with the extracted array
+    await insertMatchesIntoDB(matchesArray);
+    
+  } catch (err) {
+    console.error("Error inserting matches:", err);
+  }
 });
 
 module.exports = { matchUsers };
