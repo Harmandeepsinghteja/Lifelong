@@ -40,6 +40,31 @@ export default function AdminContent() {
     console.log(matchedUserCount);
   };
 
+  const runMatchingSequence = async () => {
+    const admin_token = localStorage.getItem("admin_token");
+    const response = await fetch("http://localhost:3000/matching-sequence", {
+      method: "POST",
+      headers: {
+        
+        token: admin_token,
+      },
+    });
+
+    const data = await response.json();
+    console.log("data")
+    console.log(data)
+    console.log("data end")
+
+    setTableData(data);
+    setUserCount(data.length);
+    setMatchedUserCount(data.filter((item) => item.matchedUsername).length);
+
+    setUserCount(data.filter((match) => match.username).length);
+    setMatchedUserCount(
+      data.filter((match) => Boolean(match.matchedUsername)).length
+    );
+  };
+
   const handleLogout = () => {
     if (isLoggedIn) {
       localStorage.removeItem("admin_token");
@@ -62,7 +87,7 @@ export default function AdminContent() {
             </h1>
 
             <Button
-              onClick={fetchData}
+              onClick={runMatchingSequence}
               className=" text-sm md:text-xl  bg-transparent text-white border border-white hover:bg-white hover:text-black transition-colors"
             >
               Run Matching Sequence

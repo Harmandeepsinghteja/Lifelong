@@ -26,8 +26,24 @@ export default function UserIconDropdown({ username }) {
   };
 
   const handleUnmatch = () => {
-    // if (window.confirm("Are you sure you want to unmatch? You will never be able to see your penpal once you unmatch.")) {
-    // } else { }
+    fetch("http://localhost:3000/unmatch", {
+      method: "DELETE",
+      headers: {
+        token: localStorage.getItem("token"),
+      },
+    })
+      .then((response) => {
+        if (!response.ok) {
+          alert("Unmatch unsuccessful")
+        }
+      })
+      .then(() => {
+        alert("unmatched successfully");
+        window.location.reload(true); 
+      })
+      .catch(() => {
+        alert("unmatched successfully");
+      });
   };
 
   const navigate = useNavigate();
