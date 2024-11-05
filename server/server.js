@@ -316,6 +316,19 @@ io.use((socket, next) => {
     });
 });
 
+// io.use(async (socket, next) => {
+//     try{
+//         const sql = 'SELECT id FROM users WHERE username = ?';
+//         const result = await queryPromiseAdapterWithPlaceholders(sql, [socket.username]);
+//         socket.userId = result[0].id;
+//         next();
+//     }
+//     catch (err) {
+//         console.log(err)
+//         return err;
+//     }
+// });
+
 const getCurrentDateTimeAsString = () => {
     var dateTime = new Date();
     dateTime = dateTime.getUTCFullYear() + '-' +
@@ -336,12 +349,31 @@ The message object must be of the format:
 */ 
 io.on('connection', async (socket) => {    
     socket.join(socket.username);
+    
+    socket.on('messageHistory', async (message) => {
+        try {
+            // Get messages sent by the user or the matched user for their current match
+            const sql = `SELECT message.id, user_match.userId as senderId, message.content, message.createdTime
+                FROM message
+                JOIN user_match on message.matchId = user_match.id
+                WHERE (user_match.userId = ${socket.userId} OR user_match.matchedUserId = ${socket.userId}) AND
+                    user_match.unmatchedTime IS NULL
+                ORDER BY message.createdTime;`;
+            const result = await queryPromiseAdapter(sql);
+            io.to(socket.username).emit('messageHistory', result);
+        }
+        catch (err) {
+            console.log(err)
+            return err;
+        }
+    });
+    
     socket.on('message', async (message) => {
         
         try {
             // Get current match id of user
             var sql = `
-                SELECT user_match.id
+                SELECT user_match.id, user_match.matchedUserId
                 FROM user_match
                 JOIN users on users.id = user_match.userId
                 WHERE users.username = '${socket.username}' AND user_match.unmatchedTime IS NULL`;
@@ -351,6 +383,14 @@ io.on('connection', async (socket) => {
                 return new Error('Could not find current match id of user');
             }
             const matchId = result[0].id;
+            const matchedUserId = result[0].matchedUserId;
+
+            // Get username of matched user
+            sql = `SELECT users.username 
+                FROM users
+                WHERE id = ${matchedUserId};`;
+            result = await queryPromiseAdapter(sql);
+            const matchedUsername = result[0].username;
 
             // Insert the message into the message table
             const createdTime = getCurrentDateTimeAsString();
@@ -359,7 +399,7 @@ io.on('connection', async (socket) => {
             result = await queryPromiseAdapterWithPlaceholders(sql, [matchId, message.content, createdTime]);
             
             // Emit the message to the matched user
-            io.to(message.matchedUsername).emit('message', message.content );
+            io.to(matchedUsername).emit('message', message.content );
         }
         catch (err) {
             console.log(err)
@@ -387,25 +427,42 @@ app.get('/message-history-of-current-match', verifyToken, attachUserIdToRequest,
     }
 });
 
+
+const getCurrentUserMatches = async () => {
+    // Get all user matches (both current and previous), but with the reverse version of each match eliminated
+    const sql = 
+        `WITH user_match_with_usernames AS (
+            SELECT \`user\`.username, matched_user.username as matchedUsername, user_match.reason
+            FROM user_match
+            JOIN users as \`user\` on user_match.userId = \`user\`.id
+            JOIN users as matched_user on user_match.matchedUserId = matched_user.id
+            WHERE user_match.unmatchedTime IS NULL 
+        )
+        -- Eliminate the reverse versions of each match
+        SELECT DISTINCT
+        CASE WHEN username >= matchedUsername THEN matchedUsername ELSE username END as username,
+        CASE WHEN username < matchedUsername THEN matchedUsername ELSE username END as matchedUsername,
+        reason
+        FROM user_match_with_usernames
+
+        UNION
+
+        SELECT DISTINCT users.username, NULL as matchedUsername, NULL as reason
+        FROM users
+        WHERE users.id NOT IN (SELECT user_match.userId
+                                FROM user_match
+                                WHERE user_match.unmatchedTime IS NULL)
+            -- Only retrieve unmatched users who have completed their bio
+            AND users.id IN (SELECT bio.userId FROM bio);`;
+
+    const result = await queryPromiseAdapter(sql);
+    return result;
+}
+
 // TODO: Implement verifyAdminToken, which decrypts the admin token and checks if the decrypted username matches the admin username
 app.get('/user-matches', verifyToken, async (req, res, next) => {
     try {
-        // Get all user matches (both current and previous), but with the reverse version of each match eliminated
-        const sql = 
-            `WITH user_match_with_usernames AS (
-	            SELECT \`user\`.username, matched_user.username as matchedUsername, user_match.reason
-	            FROM user_match
-	            JOIN users as \`user\` on user_match.userId = user.id
-	            JOIN users as matched_user on user_match.matchedUserId = matched_user.id
-            )
-            -- Eliminate the reverse versions of each match
-            SELECT DISTINCT
-            CASE WHEN username >= matchedUsername THEN matchedUsername ELSE username END as username,
-            CASE WHEN username < matchedUsername THEN matchedUsername ELSE username END as matchedUsername,
-            reason
-            FROM user_match_with_usernames;`;
-        
-        const result = await queryPromiseAdapter(sql);
+        const result = await getCurrentUserMatches();
         return res.json(result);
     }
     catch (err) {
@@ -481,11 +538,46 @@ app.post('/matching-sequence', async (req, res, next) => {
         }
     }
     // TODO: insert pairs in newMatchedUserIdPairs (as well as their corresponding reverse pairs) into user_matches table in database
-    console.log(potentialMatches);
-    return res.status(201).json(newMatchedUserIdPairs);
+    for (var pair of newMatchedUserIdPairs) {
+        try {
+            const sql = `INSERT INTO user_match (userId, matchedUserId, reason, createdTime)
+                VALUES 
+	                (?, ?, ?, ?);`;
+            const createdTime = getCurrentDateTimeAsString();
+            queryPromiseAdapterWithPlaceholders(sql, [pair[0], pair[1], 'dummy reason', createdTime]);
+            queryPromiseAdapterWithPlaceholders(sql, [pair[1], pair[0], 'dummy reason', createdTime]);
+        }
+        catch (err) {
+            return res.status(500).json(`Server side error: ${err}`);
+        }
+    }
+
+    const currentUserMatches = await getCurrentUserMatches();
+
+    return res.status(201).json(currentUserMatches);
+    
 
 });
 
+
+/* DELETE /unmatch
+Input: Admin token, attached to the header with the key set to "token".
+Output: 204 (No Content) status
+Alternate Output: Some other status like 404 or 500, and the response will contain the error message.
+ */
+app.delete('/unmatch', verifyToken, attachUserIdToRequest, async (req, res, next) => {
+    try {
+        // Get messages sent by the user or the matched user for their current match
+        const sql = `UPDATE user_match
+            SET unmatchedTime = now()
+            WHERE user_match.userId = ${req.userId} OR user_match.matchedUserId = ${req.userId}; `;
+        const result = await queryPromiseAdapter(sql, []);
+        res.status(204).json();
+    }
+    catch (err) {
+        return res.status(500).json(`Server side error: ${err}`);
+    }
+});
 
 // If the PORT environment variable is not set in the computer, then use port 3000 by default
 server.listen(process.env.PORT || 3001, () => {
