@@ -1,10 +1,10 @@
 import express from "express";
-import mysql from "mysql";
 import cors from "cors";
 import jwt from "jsonwebtoken";
 import { createServer } from "node:http";
 import { Server } from "socket.io";
 import processMatches from "./llm_helper.js";
+import {db, queryPromiseAdapter, queryPromiseAdapterWithPlaceholders} from "./database_connection.js";
 
 const SECRET_KEY = "secret";
 const bioAttributes = [
@@ -30,13 +30,6 @@ app.use(cors()); ///// If program doesn't work it could be because I excluded st
 
 const server = createServer(app);
 const io = new Server(server, { cors: { origin: "*" } });
-
-const db = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "password",
-  database: "lifelong_db",
-});
 
 const verifyToken = (req, res, next) => {
   const token = req.headers.token;
@@ -69,8 +62,6 @@ const attachUserIdToRequest = (req, res, next) => {
 app.post("/login", (req, res, next) => {
   const sql = "SELECT * FROM users WHERE username = ? AND password = ?";
   db.query(sql, [req.body.username, req.body.password], (err, data) => {
-    console.log(req.body.username);
-    console.log(req.body.password);
     if (err) {
       return res.status(500).json(`Server side error: ${err}`);
     }
@@ -191,7 +182,6 @@ app.post(
   verifyBioPostRequestBody,
   attachBioAsList,
   (req, res, next) => {
-    console.log("recived post request from client");
     const bioAttributesWithUserId = ["userId"].concat(bioAttributes);
     const sql = `INSERT INTO bio (${bioAttributesWithUserId.toString()}) 
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
@@ -285,31 +275,12 @@ app.patch(
 // }
 // Alternate Output: Some other status like 404 or 500, and the response will contain the error message.
 
-const queryPromiseAdapter = (sql) => {
-  return new Promise((resolve, reject) => {
-    db.query(sql, (err, result) => {
-      if (err) reject(err);
-      else resolve(result);
-    });
-  });
-};
-
-const queryPromiseAdapterWithPlaceholders = (sql, args) => {
-  return new Promise((resolve, reject) => {
-    db.query(sql, args, (err, result) => {
-      if (err) reject(err);
-      else resolve(result);
-    });
-  });
-};
-
 app.get(
   "/user-metadata",
   verifyToken,
   attachUserIdToRequest,
   async (req, res, next) => {
     var metaData = { userID: req.userId, username: req.username };
-    console.log("metadata:", req.username);
     try {
       // Check if bio is complete
       var sql = `SELECT * FROM bio WHERE bio.userId = ${req.userId}`;
@@ -400,7 +371,6 @@ io.on("connection", async (socket) => {
   socket.join(socket.username);
 
   socket.on("messageHistory", async (message) => {
-    console.log("srat messageHistory");
     try {
       // Get messages sent by the user or the matched user for their current match
       const sql = `SELECT message.id, user_match.userId as senderId, message.content, message.createdTime
@@ -411,7 +381,6 @@ io.on("connection", async (socket) => {
                 ORDER BY message.createdTime;`;
       const result = await queryPromiseAdapter(sql);
       io.to(socket.username).emit("messageHistory", result);
-      console.log(result);
     } catch (err) {
       console.log(err);
       return err;
@@ -600,7 +569,7 @@ const getPreviousMatches = async() => {
 
 
 // TODO: Implement verifyAdminToken, which decrypts the admin token and checks if the decrypted username matches the admin username
-app.post('/matching-sequence-manual', async (req, res, next) => {
+app.post('/match-users-manual', async (req, res, next) => {
   const unmatchedUserIdsWithBio = await getUnmatchedUserIdsWithBio();
   const previousMatches = await getPreviousMatches();
 
@@ -659,8 +628,11 @@ app.post('/matching-sequence-manual', async (req, res, next) => {
 // Endpoint to get user matches
 app.post("/match-users", async (req, res) => {
     try {
-      const matches = await processMatches();
-      res.json({ matches });
+      const currentUserMatches = await processMatches();
+      //const currentUserMatches = await getCurrentUserMatches();
+      console.log("Result is:");
+      console.log(currentUserMatches);
+      res.json(currentUserMatches);
     } catch (err) {
       res.status(500).json({ error: err.message });
     }

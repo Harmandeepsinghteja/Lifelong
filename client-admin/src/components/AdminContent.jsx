@@ -33,16 +33,11 @@ export default function AdminContent() {
     setMatchedUserCount(
       data.filter((match) => Boolean(match.matchedUsername)).length
     );
-
-    console.log(data);
-
-    console.log(userCount);
-    console.log(matchedUserCount);
   };
 
   const runMatchingSequence = async () => {
     const admin_token = localStorage.getItem("admin_token");
-    const response = await fetch("http://localhost:3000/matching-sequence", {
+    const response = await fetch("http://localhost:3000/match-users", {
       method: "POST",
       headers: {
         
