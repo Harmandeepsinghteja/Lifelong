@@ -4,6 +4,7 @@ import cors from "cors";
 import jwt from "jsonwebtoken";
 import { createServer } from "node:http";
 import { Server } from "socket.io";
+import processMatches from "./llm_helper.js";
 
 const SECRET_KEY = "secret";
 const bioAttributes = [
@@ -599,7 +600,7 @@ const getPreviousMatches = async() => {
 
 
 // TODO: Implement verifyAdminToken, which decrypts the admin token and checks if the decrypted username matches the admin username
-app.post('/matching-sequence', async (req, res, next) => {
+app.post('/matching-sequence-manual', async (req, res, next) => {
   const unmatchedUserIdsWithBio = await getUnmatchedUserIdsWithBio();
   const previousMatches = await getPreviousMatches();
 
@@ -650,12 +651,20 @@ app.post('/matching-sequence', async (req, res, next) => {
   }
 
   const currentUserMatches = await getCurrentUserMatches();
-
   return res.status(201).json(currentUserMatches);
-  
-
 });
 
+
+
+// Endpoint to get user matches
+app.post("/match-users", async (req, res) => {
+    try {
+      const matches = await processMatches();
+      res.json({ matches });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
 
 
 app.delete('/unmatch', verifyToken, attachUserIdToRequest, async (req, res, next) => {
