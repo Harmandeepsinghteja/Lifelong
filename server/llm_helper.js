@@ -1,27 +1,14 @@
-import express from "express";
 import dotenv from "dotenv";
 import axios from "axios";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import mysql from "mysql2";
-import fetch from "node-fetch"; // Ensure you have node-fetch installed
-// import db from "./db"; // Assuming you have a db module for database operations
-import cors from "cors";
-import jwt from "jsonwebtoken";
-import { createServer } from "http";
-import { Server } from "socket.io";
+import { db, queryPromiseAdapter } from "./database_connection.js";
 
 // Get Keys from .env file
 dotenv.config({ path: ".env" });
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const DB_HOST = process.env.DB_HOST;
-const DB_HOST_2 = process.env.DB_HOST;
-const DB_USER = process.env.DB_USER;
-const DB_PASSWORD = process.env.DB_PASSWORD;
-const DB_NAME = process.env.DB_NAME;
 
-const SECRET_KEY = "secret";
 const bioAttributes = [
   "age",
   "occupation",
@@ -35,26 +22,9 @@ const bioAttributes = [
   "bio",
 ];
 
-const db = mysql.createConnection({
-  host: DB_HOST,
-  user: DB_USER,
-  password: DB_PASSWORD,
-  database: DB_NAME,
-  port: process.env.DB_PORT,
-});
-
-
-
 
 // Function to fetch user data from usertable and bio table using callbacks
 const fetchUsersData = (callback) => {
-  db.connect((err) => {
-    if (err) {
-      console.error("Error connecting to the database:", err);
-      return callback(err);
-    }
-    console.log("Connected to the database successfully!");
-
     const query = `
       SELECT DISTINCT users.id as userId, ${bioAttributes
         .map((attr) => `bio.${attr}`)
@@ -87,7 +57,6 @@ const fetchUsersData = (callback) => {
       }));
       callback(null, formattedResults);
     });
-  });
 };
 
 
@@ -245,38 +214,45 @@ const getCurrentDateTimeAsString = () => {
 };
 
 
-const insertMatchesIntoDB = (matches) => {
+const insertMatchesIntoDB = async (matches) => {
   const insertQuery = `INSERT INTO user_match (userId, matchedUserId, createdTime, reason) VALUES (?, ?, ?, ?)`;
   const currentTime = getCurrentDateTimeAsString();
 
-  matches.forEach((match) => {
-    db.query(
-      insertQuery,
-      [match.userId, match.matchUserId, currentTime, match.reason],
-      (err, results) => {
-        if (err) {
-          console.error("Error inserting match:", err);
-          return;
-        }
-        console.log("Match inserted:", results);
-
-        // Insert again with userId and matchUserId swapped
-        db.query(
-          insertQuery,
-          [match.matchUserId, match.userId, currentTime, match.reason],
-          (err, results) => {
-            if (err) {
-              console.error("Error inserting swapped match:", err);
-              return;
-            }
-            console.log("Swapped match inserted:", results);
+  // Map each match into a pair of queries (original and swapped)
+  const insertPromises = matches.flatMap((match) => [
+    new Promise((resolve, reject) => {
+      db.query(
+        insertQuery,
+        [match.userId, match.matchUserId, currentTime, match.reason],
+        (err, results) => {
+          if (err) {
+            console.error("Error inserting match:", err);
+            reject(err);
+          } else {
+            resolve(results);
           }
-        );
-      }
-    );
-  });
-};
+        }
+      );
+    }),
+    new Promise((resolve, reject) => {
+      db.query(
+        insertQuery,
+        [match.matchUserId, match.userId, currentTime, match.reason],
+        (err, results) => {
+          if (err) {
+            console.error("Error inserting swapped match:", err);
+            reject(err);
+          } else {
+            resolve(results);
+          }
+        }
+      );
+    }),
+  ]);
 
+  // Wait for all insertions to complete
+  await Promise.all(insertPromises);
+};
 
 // Call the matchUsers function and then insert the matches into the database
 const processMatches = async () => {
@@ -284,14 +260,12 @@ const processMatches = async () => {
     const matches = await matchUsers();
     // Extract the matches array from the JSON object
     const matchesArray = matches.matches;
-    console.log("Matches:", matchesArray);
     // Ensure matchesArray is an array
     if (!Array.isArray(matchesArray)) {
       throw new TypeError("matches is not iterable");
     }
     // Call the function with the extracted array
     await insertMatchesIntoDB(matchesArray);
-    console.log("Matches inserted successfully!");
   } catch (err) {
     console.error("Error inserting matches:", err);
   }
