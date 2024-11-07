@@ -623,13 +623,11 @@ app.post('/match-users-manual', async (req, res, next) => {
   return res.status(201).json(currentUserMatches);
 });
 
-
-
 // Endpoint to get user matches
 app.post("/match-users", async (req, res) => {
     try {
-      const currentUserMatches = await processMatches();
-      //const currentUserMatches = await getCurrentUserMatches();
+      await processMatches();
+      const currentUserMatches = await getCurrentUserMatches();
       console.log("Result is:");
       console.log(currentUserMatches);
       res.json(currentUserMatches);

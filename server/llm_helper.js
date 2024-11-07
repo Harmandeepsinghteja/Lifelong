@@ -229,7 +229,6 @@ const insertMatchesIntoDB = async (matches) => {
             console.error("Error inserting match:", err);
             reject(err);
           } else {
-            console.log("Match inserted:", results);
             resolve(results);
           }
         }
@@ -244,7 +243,6 @@ const insertMatchesIntoDB = async (matches) => {
             console.error("Error inserting swapped match:", err);
             reject(err);
           } else {
-            console.log("Swapped match inserted:", results);
             resolve(results);
           }
         }
@@ -254,41 +252,7 @@ const insertMatchesIntoDB = async (matches) => {
 
   // Wait for all insertions to complete
   await Promise.all(insertPromises);
-  console.log("\n\n\nDone entering everything in the database\n\n\n");
 };
-
-const getCurrentUserMatches = async () => {
-  console.log("\n\n\nStarting Retrieveing from the database\n\n\n");
-  // Get all user matches (both current and previous), but with the reverse version of each match eliminated
-  const sql = 
-      `WITH user_match_with_usernames AS (
-          SELECT \`user\`.username, matched_user.username as matchedUsername, user_match.reason
-          FROM user_match
-          JOIN users as \`user\` on user_match.userId = \`user\`.id
-          JOIN users as matched_user on user_match.matchedUserId = matched_user.id
-          WHERE user_match.unmatchedTime IS NULL 
-      )
-      -- Eliminate the reverse versions of each match
-      SELECT DISTINCT
-      CASE WHEN username >= matchedUsername THEN matchedUsername ELSE username END as username,
-      CASE WHEN username < matchedUsername THEN matchedUsername ELSE username END as matchedUsername,
-      reason
-      FROM user_match_with_usernames
-
-      UNION
-
-      SELECT DISTINCT users.username, NULL as matchedUsername, NULL as reason
-      FROM users
-      WHERE users.id NOT IN (SELECT user_match.userId
-                              FROM user_match
-                              WHERE user_match.unmatchedTime IS NULL)
-          -- Only retrieve unmatched users who have completed their bio
-          AND users.id IN (SELECT bio.userId FROM bio);`;
-
-  const result = await queryPromiseAdapter(sql);
-  console.log("\n\n\nDone Retrieveing from the database\n\n\n");
-  return result;
-}
 
 // Call the matchUsers function and then insert the matches into the database
 const processMatches = async () => {
@@ -296,16 +260,12 @@ const processMatches = async () => {
     const matches = await matchUsers();
     // Extract the matches array from the JSON object
     const matchesArray = matches.matches;
-    console.log("Matches:", matchesArray);
     // Ensure matchesArray is an array
     if (!Array.isArray(matchesArray)) {
       throw new TypeError("matches is not iterable");
     }
     // Call the function with the extracted array
     await insertMatchesIntoDB(matchesArray);
-    console.log("Matches inserted successfully!");
-    const currentUserMatches = await getCurrentUserMatches();
-    return currentUserMatches;
   } catch (err) {
     console.error("Error inserting matches:", err);
   }
