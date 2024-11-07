@@ -25,4 +25,18 @@ test.describe('Register', () => {
     await expect(page.getByRole('heading', {name :'Your Bio'})).toBeVisible();
   });
 
+  test('Verify showing error messages when entering invalid password', async ({ page }) => {
+    await expect(page.getByPlaceholder('Choose a username')).toBeVisible();
+    await page.getByPlaceholder('Username').fill('TC_001_username');
+    await page.getByPlaceholder('Create a password').fill('invalidpassword');
+    await page.getByPlaceholder('Confirm password').fill('invalidpassword');
+    await page.getByLabel('I consent:').check();
+    page.on('dialog', async (dialog) => {
+      await expect(dialog.message()).toBe('Password requirements are not met. Please enter passwords again to meet requirements.');
+      await dialog.accept();
+    })
+    await page.getByRole('button', {name: 'Sign Up'}).click();
+  });
+
+
 });
