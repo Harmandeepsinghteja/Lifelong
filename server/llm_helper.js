@@ -177,6 +177,9 @@ const matchUsers = async () => {
         resolve(data);
       });
     });
+      if (usersData.length <= 1) {
+          return; // Do nothing if usersData has 1 or fewer rows
+      }
     return await matchUsersOpenAI(usersData);
   } catch (error) {
     console.log("Falling back to Gemini API");
@@ -187,6 +190,10 @@ const matchUsers = async () => {
           resolve(data);
         });
       });
+      
+          if (usersData.length <= 1) {
+            return; // Do nothing if usersData has 1 or fewer rows
+          }
       return await matchUsersGemini(usersData);
     } catch (err) {
       console.error("Error fetching user data for Gemini API:", err);
@@ -259,6 +266,10 @@ const processMatches = async () => {
   try {
     const matches = await matchUsers();
     // Extract the matches array from the JSON object
+    if (!matches || !matches.matches) {
+      console.log("No matches found");
+      return;
+    }
     const matchesArray = matches.matches;
     // Ensure matchesArray is an array
     if (!Array.isArray(matchesArray)) {
