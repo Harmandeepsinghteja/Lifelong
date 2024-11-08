@@ -6,7 +6,7 @@ const db = createUniqueDatabaseConnection();
 
 test.describe('Authentication', () => {
     test.beforeEach(async ({ page }) => {
-        await runSqlFile(db, '../db_scripts/clean.sql');
+        runSqlFile(db, '../db_scripts/clean.sql');
         await page.goto(base_url)
     });
 
@@ -24,7 +24,7 @@ test.describe('Authentication', () => {
     //TC_004
     test('Test the functionality of logging in an existing account', async ({ page }) => {
         // prepare data
-        await runSqlFile(db, '../db_scripts/matched-users.sql');
+        runSqlFile(db, '../db_scripts/matched-users.sql');
         // then go to log in page and try to log in
         await page.getByRole('heading', {name: 'Login'}).toBeVisible;
         await page.getByLabel('Username').fill('TestUser');

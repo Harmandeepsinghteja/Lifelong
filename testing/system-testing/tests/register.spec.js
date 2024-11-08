@@ -7,7 +7,7 @@ const db = createUniqueDatabaseConnection();
 test.describe('Register', () => {
   test.beforeEach(async ({ page }) => {
     //clean database
-    await runSqlFile(db, '../db_scripts/clean.sql')
+    runSqlFile(db, '../db_scripts/clean.sql')
     await page.goto(base_url + 'signup')
   });
 
@@ -56,7 +56,7 @@ test.describe('Register', () => {
   // TC_003
   test('Verify showing error messages when username already exists', async ({ page }) => {
     // prepare data
-    await runSqlFile(db, '../db_scripts/matched-users.sql');
+    runSqlFile(db, '../db_scripts/matched-users.sql');
     // go to sign up page again and use the same username and password to sign up
     await page.goto(base_url+'signup')
     await page.getByPlaceholder('Username').fill('TestUser');
