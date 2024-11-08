@@ -2,16 +2,18 @@ const fs = require('fs');
 const path = require('path');
 const mysql = require('mysql')
 
-const db = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "123456",
-  database: "lifelong_db",
-  multipleStatements: true
-});
+function createUniqueDatabaseConnection() {
+    const connection = mysql.createConnection({
+        host: 'localhost',
+        user: 'root',
+        password: '123456',
+        multipleStatements: true
+    });
 
+    return connection;
+}
 
-function runSqlFile(relativeFilePath) {
+function runSqlFile(db, relativeFilePath) {
     // Resolve the relative path to an absolute path
     const filePath = path.resolve(__dirname, relativeFilePath);
   
@@ -29,17 +31,8 @@ function runSqlFile(relativeFilePath) {
             } else {
                 console.log('SQL script executed successfully:', results);
             }
-  
-            // Close the db
-            db.end((endErr) => {
-                if (endErr) {
-                    console.error('Error closing db:', endErr);
-                } else {
-                    console.log('db closed.');
-                }
-            });
         });
     });
 }
 
-module.exports = { runSqlFile };
+module.exports = { createUniqueDatabaseConnection, runSqlFile };
