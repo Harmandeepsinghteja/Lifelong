@@ -13,11 +13,13 @@ import { User, MessageSquareX, LogOut } from "lucide-react";
 import { useSharedState } from "../MyContext";
 
 export default function UserIconDropdown({ username }) {
-  const { isLoggedIn, setIsLoggedIn } = useSharedState();
+  const { isLoggedIn, setIsLoggedIn, matchedUsername } = useSharedState();
   const [isOpen, setIsOpen] = useState(false);
 
   const firstInitial = username.charAt(0).toUpperCase();
 
+
+  
   const handleLogout = () => {
     if (isLoggedIn) {
       localStorage.removeItem("token");
@@ -71,10 +73,14 @@ export default function UserIconDropdown({ username }) {
           <User className="mr-2 h-4 w-4" />
           <span onClick={() => navigate("/bio")}>View/Update Bio</span>
         </DropdownMenuItem>
-        <DropdownMenuItem className="focus:bg-zinc-700 focus:text-zinc-100">
+
+        {matchedUsername ?   <DropdownMenuItem className="focus:bg-zinc-700 focus:text-zinc-100">
           <MessageSquareX className="mr-2 h-4 w-4" />
           <span onClick={handleUnmatch}>Unmatch</span>
-        </DropdownMenuItem>
+        </DropdownMenuItem>: <></>}
+
+       
+
         <DropdownMenuSeparator className="bg-zinc-700" />
         <DropdownMenuItem className="focus:bg-zinc-700 focus:text-zinc-100">
           <LogOut className="mr-2 h-4 w-4" />

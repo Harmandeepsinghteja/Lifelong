@@ -7,7 +7,8 @@ import { useNavigate } from "react-router-dom";
 
 const Landing = () => {
   const { isLoggedIn } = useSharedState();
-  const [matchedUsername, setMatchedUsername] = useState("");
+
+  const {matchedUsername, setMatchedUsername} = useSharedState();
   const [error, setError] = useState("");
   const navigate = useNavigate();
 

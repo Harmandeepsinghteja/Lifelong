@@ -4,10 +4,12 @@ const MyContext = createContext();
 
 const MyProvider = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [matchedUsername, setMatchedUsername] = useState(false);
 
   return (
     <MyContext.Provider
-      value={{ isLoggedIn, setIsLoggedIn }}
+      value={{ isLoggedIn, setIsLoggedIn,matchedUsername, setMatchedUsername }}
+
     >
       {children}
     </MyContext.Provider>
