@@ -1,19 +1,50 @@
 USE lifelong_db;
 
+-- Disable foreign key checks
+SET FOREIGN_KEY_CHECKS = 0;
+-- Clear existing data
+DELETE FROM users;
+DELETE FROM bio;
+DELETE FROM user_match;
+DELETE FROM message;
+
+-- Enable foreign key checks
+SET FOREIGN_KEY_CHECKS = 1;
+
 INSERT INTO users
 VALUES (1,'charlie','1234'),
 	(2,'snoopy','1234'),
 	(3,'linus','1234'),
 	(4,'lucy','1234'),
 	(5,'john','1234'),
-	(6,'joe','1234');
+	(6,'joe','1234'),
+	(7, 'alice', '1234'),
+    (8, 'bob', '1234'),
+    (9, 'carol', '1234'),
+    (10, 'dave', '1234'),
+    (11, 'eve', '1234'),
+    (12, 'frank', '1234'),
+    (13, 'grace', '1234'),
+    (14, 'heidi', '1234'),
+    (15, 'ivan', '1234'),
+    (16, 'judy', '1234');
 
 INSERT INTO bio 
 VALUES (1,99,'Hardware Engineer','Male','Polynesian','Antarctica','Easter Island','Single','Casual Chat','Weekly','I love coding, reading sci-fi novels, and hiking. Big foodie here!'),
 (2,28,'Software Developer','Nonbinary','Asian','Canada','India','Single','Casual Chat','Weekly','I love coding, reading sci-fi novels, and hiking. Big foodie here!'),
 (3,30,'Hotdog vendor','Male','Polynesian','Antarctica','Easter Island','Single','Casual Chat','Weekly','I love coding, reading sci-fi novels, and hiking. Big foodie here!'),
 (4,40,'Business Analyst','Female','Nigerian','Canada','Nigeria','Single','Casual Chat','Weekly','I love coding, reading sci-fi novels, and hiking. Big foodie here!'),
-(5,50,'Carpenter','Male','South African','Antarctica','South Africa','Single','Casual Chat','Weekly','I love coding, reading sci-fi novels, and hiking. Big foodie here!');
+(5,50,'Carpenter','Male','South African','Antarctica','South Africa','Single','Casual Chat','Weekly','I love coding, reading sci-fi novels, and hiking. Big foodie here!'),
+(7, 27, 'Teacher', 'Female', 'Asian', 'Japan', 'Tokyo', 'Single', 'Friendship', 'Weekly', 'I love teaching and mentoring.'),
+    (8, 32, 'Doctor', 'Male', 'Caucasian', 'Germany', 'Berlin', 'Married', 'Business', 'Monthly', 'I am passionate about healthcare.'),
+    (9, 26, 'Nurse', 'Female', 'African', 'Nigeria', 'Lagos', 'Single', 'Dating', 'Daily', 'I enjoy caring for others.'),
+    (10, 31, 'Lawyer', 'Male', 'Asian', 'China', 'Beijing', 'Married', 'Networking', 'Weekly', 'I love practicing law.'),
+    (11, 23, 'Artist', 'Female', 'Caucasian', 'France', 'Paris', 'Single', 'Friendship', 'Monthly', 'I am passionate about art and creativity.'),
+    (12, 34, 'Chef', 'Male', 'Hispanic', 'Spain', 'Madrid', 'Married', 'Business', 'Daily', 'I love cooking and experimenting with recipes.'),
+    (13, 28, 'Photographer', 'Female', 'Asian', 'South Korea', 'Seoul', 'Single', 'Dating', 'Weekly', 'I enjoy capturing moments through photography.'),
+    (14, 36, 'Writer', 'Male', 'Caucasian', 'USA', 'Los Angeles', 'Married', 'Networking', 'Monthly', 'I am passionate about writing and storytelling.'),
+    (15, 27, 'Musician', 'Female', 'African', 'Brazil', 'Rio de Janeiro', 'Single', 'Friendship', 'Daily', 'I love playing music and performing.'),
+    (16, 29, 'Actor', 'Male', 'Asian', 'India', 'Delhi', 'Single', 'Dating', 'Weekly', 'I enjoy acting and being on stage.');
 
 INSERT INTO user_match
 VALUES 
