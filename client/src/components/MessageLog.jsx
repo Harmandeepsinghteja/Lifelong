@@ -1,11 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
-import io from "socket.io-client";
 import { useSharedState } from "../MyContext";
 
-const socket = io("http://localhost:3000", { autoConnect: false });
-const token = localStorage.getItem("token");
-socket.auth = { token };
-socket.connect();
 
 const MessageLog = () => {
   const { isLoggedIn, setIsLoggedIn } = useSharedState();
@@ -14,8 +9,10 @@ const MessageLog = () => {
   const [userID, setUserID] = useState([]);
   const messagesEndRef = useRef(null);
   const [error, setError] = useState("");
-
+  const { socket } = useSharedState();
+  
   useEffect(() => {
+    console.log("login status: ", isLoggedIn);
     fetch("http://localhost:3000/user-metadata", {
       headers: {
         token: localStorage.getItem("token"),
@@ -47,9 +44,6 @@ const MessageLog = () => {
             console.log("setting messages");
             setMessages(
               data
-              // data.map((message) => ({
-              //   ...message,
-              // }))
             );
             console.log(data);
             setTimeout(scrollToBottom, 1000); // Scroll to bottom on initial load with delay
@@ -61,17 +55,6 @@ const MessageLog = () => {
         console.log(error);
       });
 
-    // socket.on("messageHistory", (initialMessages) => {
-    //   console.log("setting messages");
-    //   setMessages(
-    //     initialMessages.map((message) => ({
-    //       ...message,
-    //     }))
-    //   );
-    //   console.log(messages);
-    //   setTimeout(scrollToBottom, 1000); // Scroll to bottom on initial load with delay
-    // });
-
     socket.on("message", (newMessage) => {
       setMessages((prevMessages) => [
         ...prevMessages,
@@ -82,10 +65,6 @@ const MessageLog = () => {
       setTimeout(scrollToBottom, 500); // Scroll to bottom when a new message appears with delay
     });
 
-    return () => {
-      socket.off("messageHistory");
-      socket.off("message");
-    };
   }, []);
 
   useEffect(() => {
