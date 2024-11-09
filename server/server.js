@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import jwt from "jsonwebtoken";
+import bcrypt from 'bcrypt';
 import { createServer } from "node:http";
 import { Server } from "socket.io";
 import processMatches from "./llm_helper.js";
@@ -67,6 +68,7 @@ app.post('/login', async (req, res, next) => {
 
             const hashedPassword = results[0].password;
             const match = await bcrypt.compare(req.body.password, hashedPassword);
+            console.log(match);
             if (match) {
                 const token = jwt.sign({username: req.body.username}, SECRET_KEY);
                 res.status(200).json({token: token});
