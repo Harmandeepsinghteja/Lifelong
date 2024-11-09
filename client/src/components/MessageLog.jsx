@@ -1,16 +1,17 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useSharedState } from "../MyContext";
 
-
 const MessageLog = () => {
   const { isLoggedIn, setIsLoggedIn } = useSharedState();
 
   const [messages, setMessages] = useState([]);
   const [userID, setUserID] = useState([]);
+  const [matchedReason, setMatchedReason] = useState();
+  const [matchedUsername, setMatchedUsername] = useState();
   const messagesEndRef = useRef(null);
   const [error, setError] = useState("");
   const { socket } = useSharedState();
-  
+
   useEffect(() => {
     console.log("login status: ", isLoggedIn);
     fetch("http://localhost:3000/user-metadata", {
@@ -27,6 +28,8 @@ const MessageLog = () => {
       .then((data) => {
         setIsLoggedIn(true);
         setUserID(data.userID);
+        setMatchedReason(data.matchedReason);
+        setMatchedUsername(data.matchedUsername);
       })
       .then(() => {
         fetch("http://localhost:3000/message-history-of-current-match", {
@@ -42,9 +45,7 @@ const MessageLog = () => {
           })
           .then((data) => {
             console.log("setting messages");
-            setMessages(
-              data
-            );
+            setMessages(data);
             console.log(data);
             setTimeout(scrollToBottom, 1000); // Scroll to bottom on initial load with delay
           });
@@ -64,7 +65,6 @@ const MessageLog = () => {
       ]);
       setTimeout(scrollToBottom, 500); // Scroll to bottom when a new message appears with delay
     });
-
   }, []);
 
   useEffect(() => {
@@ -110,6 +110,11 @@ const MessageLog = () => {
 
   return (
     <div className="flex flex-col w-full max-w-6xl mx-auto text-zinc-100 p-4 flex-1 overflow-auto">
+      <p className="text-center text-sm text-zinc-400 italic">
+        You have been matched with {matchedUsername} because...
+      </p>
+      <p className="text-center text-zinc-200">{matchedReason}</p>
+
       {messages.length === 0 ? (
         <p className="text-center text-zinc-200">
           Send something to start the chat!

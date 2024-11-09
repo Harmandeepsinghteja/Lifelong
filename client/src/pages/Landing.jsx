@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom";
 const Landing = () => {
   const { isLoggedIn } = useSharedState();
 
-  const {matchedUsername, setMatchedUsername} = useSharedState();
+  const { matchedUsername, setMatchedUsername } = useSharedState();
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
@@ -26,9 +26,8 @@ const Landing = () => {
           return response.json();
         })
         .then((data) => {
-
           if (!data.bioComplete) {
-            navigate('/bio');
+            navigate("/bio");
           }
 
           setMatchedUsername(data.matchedUsername);
