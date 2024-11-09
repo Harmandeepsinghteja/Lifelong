@@ -2,16 +2,13 @@ import React, { useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Send } from "lucide-react";
-import io from "socket.io-client";
+import { useSharedState } from "../MyContext";
 
-const socket = io("http://localhost:3000", { autoConnect: false });
-const token = localStorage.getItem("token");
-socket.auth = { token };
-socket.connect();
 
 export default function MessageInput({ onSendMessage }) {
   const [newMessage, setNewMessage] = React.useState("");
   const textareaRef = useRef(null);
+  const { socket } = useSharedState();
 
   useEffect(() => {
     adjustTextareaHeight();

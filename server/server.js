@@ -369,7 +369,7 @@ The message object must be of the format:
 */
 io.on("connection", async (socket) => {
   socket.join(socket.username);
-
+  console.log(`${socket.username} has connected`)
   socket.on("messageHistory", async (message) => {
     try {
       // Get messages sent by the user or the matched user for their current match
