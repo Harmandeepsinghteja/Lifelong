@@ -55,12 +55,12 @@ const verifyAdminToken = (req, res, next) => {
   if (!adminToken) {
     return res.status(404).json("Please provide admin token");
   } else {
-    jwt.verify(token, TOKEN_SECRET_KEY, (err, decoded) => {
+    jwt.verify(adminToken, TOKEN_SECRET_KEY, (err, decoded) => {
       if (err) {
         res.status(401).json();
         return;
       }
-      if (decoded !== ADMIN_USERNAME) {
+      if (decoded.adminUsername !== ADMIN_USERNAME) {
         res.status(401).json();
         return;
       }
@@ -90,7 +90,6 @@ app.post('/login', async (req, res, next) => {
 
             const hashedPassword = results[0].password;
             const match = await bcrypt.compare(req.body.password, hashedPassword);
-            console.log(match);
             if (match) {
                 const token = jwt.sign({username: req.body.username}, TOKEN_SECRET_KEY);
                 res.status(200).json({token: token});
@@ -113,7 +112,7 @@ app.post("/admin-login", (req, res, next) => {
     req.body.username === ADMIN_USERNAME &&
     req.body.password === ADMIN_PASSWORD
   ) {
-    const token = jwt.sign({ ADMIN_USERNAME }, TOKEN_SECRET_KEY);
+    const token = jwt.sign({ adminUsername: ADMIN_USERNAME }, TOKEN_SECRET_KEY);
     res.json({ admin_token: token });
   } else {
     return res.status(400).json("Invalid admin credentials");
@@ -615,8 +614,6 @@ app.post("/match-users", verifyAdminToken, async (req, res) => {
     try {
       await processMatches();
       const currentUserMatches = await getCurrentUserMatches();
-      console.log("Result is:");
-      console.log(currentUserMatches);
       res.json(currentUserMatches);
     } catch (err) {
       res.status(500).json({ error: err.message });

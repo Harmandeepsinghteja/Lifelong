@@ -59,10 +59,6 @@ const fetchUsersData = (callback) => {
     });
 };
 
-
-
-
-
 // Function to send user data to ChatGPT API and get matches
 const matchUsersOpenAI = async (usersData) => {
   try {
@@ -114,11 +110,10 @@ const matchUsersGemini = async (usersData) => {
     )}. For each user, please provide multiple interesting matches with a rating for each match. The matches do not need to share the same interests but should be based on complementary or diverse interests. Return the matches in strict JSON format with the following structure: {"matches": [{"userId": <userId>, "matchUserId": <matchUserId>, "reason": <reason>, "rating": <rating>}]}. Ensure that each user is matched only once, and each userId should appear in only one row.`;
 
     const result = await model.generateContent(prompt);
-    // console.log(result.response.text());
-    // Ensure the response is valid JSON
 
+    // Ensure the response is valid JSON
     let jsonResponse = result.response.text();
-    // console.log(jsonResponse);
+    
     // Remove the ```json and ``` markers and trim whitespace
     jsonResponse = jsonResponse.replace(/```json|```/g, "").trim();
 
@@ -155,8 +150,6 @@ const matchUsersGemini = async (usersData) => {
         }
       }
     });
-
-
 
     return { matches: bestMatches };
   } catch (error) {
@@ -221,7 +214,6 @@ const getCurrentDateTimeAsString = () => {
     utcOffset;
   return dateTime;
 };
-
 
 const insertMatchesIntoDB = async (matches) => {
   const insertQuery = `INSERT INTO user_match (userId, matchedUserId, createdTime, reason) VALUES (?, ?, ?, ?)`;

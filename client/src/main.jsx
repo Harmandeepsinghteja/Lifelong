@@ -7,10 +7,8 @@ import { MyProvider } from "./MyContext";
 
 createRoot(document.getElementById("root")).render(
   <MyProvider>
-    {/* <StrictMode> */}
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
-    {/* </StrictMode> */}
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
   </MyProvider>
 );
