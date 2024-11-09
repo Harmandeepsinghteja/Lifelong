@@ -50,6 +50,25 @@ const verifyToken = (req, res, next) => {
   }
 };
 
+const verifyAdminToken = (req, res, next) => {
+  const adminToken = req.headers.admin_token;
+  if (!adminToken) {
+    return res.status(404).json("Please provide admin token");
+  } else {
+    jwt.verify(token, TOKEN_SECRET_KEY, (err, decoded) => {
+      if (err) {
+        res.status(401).json();
+        return;
+      }
+      if (decoded !== ADMIN_USERNAME) {
+        res.status(401).json();
+        return;
+      }
+      next();
+    });
+  }
+}
+
 const attachUserIdToRequest = (req, res, next) => {
   const sql = "SELECT id FROM users WHERE username = ?";
   db.query(sql, [req.username], (err, data) => {
@@ -289,11 +308,7 @@ app.patch(
 // }
 // Alternate Output: Some other status like 404 or 500, and the response will contain the error message.
 
-app.get(
-  "/user-metadata",
-  verifyToken,
-  attachUserIdToRequest,
-  async (req, res, next) => {
+app.get("/user-metadata", verifyToken, attachUserIdToRequest, async (req, res, next) => {
     var metaData = { userID: req.userId, username: req.username };
     try {
       // Check if bio is complete
@@ -454,11 +469,7 @@ io.on("connection", async (socket) => {
   });
 });
 
-app.get(
-  "/message-history-of-current-match",
-  verifyToken,
-  attachUserIdToRequest,
-  async (req, res, next) => {
+app.get( "/message-history-of-current-match", verifyToken, attachUserIdToRequest, async (req, res, next) => {
     try {
       // Get messages sent by the user or the matched user for their current match
       const sql = `SELECT message.id, user_match.userId as senderId, message.content, message.createdTime
@@ -507,7 +518,7 @@ const getCurrentUserMatches = async () => {
 }
 
 // TODO: Implement verifyAdminToken, which decrypts the admin token and checks if the decrypted username matches the admin username
-app.get('/user-matches', verifyToken, async (req, res, next) => {
+app.get('/user-matches', verifyAdminToken, async (req, res, next) => {
   try {
       const result = await getCurrentUserMatches();
       return res.json(result);
@@ -545,7 +556,7 @@ const getPreviousMatches = async() => {
 
 
 // TODO: Implement verifyAdminToken, which decrypts the admin token and checks if the decrypted username matches the admin username
-app.post('/match-users-manual', async (req, res, next) => {
+app.post('/match-users-manual', verifyAdminToken, async (req, res, next) => {
   const unmatchedUserIdsWithBio = await getUnmatchedUserIdsWithBio();
   const previousMatches = await getPreviousMatches();
 
@@ -580,7 +591,7 @@ app.post('/match-users-manual', async (req, res, next) => {
 
       }
   }
-  // TODO: insert pairs in newMatchedUserIdPairs (as well as their corresponding reverse pairs) into user_matches table in database
+  
   for (var pair of newMatchedUserIdPairs) {
       try {
           const sql = `INSERT INTO user_match (userId, matchedUserId, reason, createdTime)
@@ -599,8 +610,8 @@ app.post('/match-users-manual', async (req, res, next) => {
   return res.status(201).json(currentUserMatches);
 });
 
-// Endpoint to get user matches
-app.post("/match-users", async (req, res) => {
+// TODO: Implement verifyAdminToken, which decrypts the admin token and checks if the decrypted username matches the admin username
+app.post("/match-users", verifyAdminToken, async (req, res) => {
     try {
       await processMatches();
       const currentUserMatches = await getCurrentUserMatches();
