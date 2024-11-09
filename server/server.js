@@ -10,6 +10,8 @@ import dotenv from "dotenv";
 
 dotenv.config({ path: ".env" });
 const TOKEN_SECRET_KEY = process.env.TOKEN_SECRET_KEY;
+const ADMIN_USERNAME = process.env.ADMIN_USERNAME;
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 
 const bioAttributes = [
   "age",
@@ -23,8 +25,6 @@ const bioAttributes = [
   "messageFrequency",
   "bio",
 ];
-const ADMIN_USERNAME = "admin";
-const ADMIN_PASSWORD = "password";
 
 const app = express();
 app.use(express.json());    // If this is not included, then we will not be able to read json sent in request body
@@ -359,6 +359,7 @@ io.use(async (socket, next) => {
 
 const getCurrentDateTimeAsString = () => {
   var dateTime = new Date();
+  var utcOffset = "+00:00";
   dateTime =
     dateTime.getUTCFullYear() +
     "-" +
@@ -370,7 +371,8 @@ const getCurrentDateTimeAsString = () => {
     ":" +
     ("00" + dateTime.getUTCMinutes()).slice(-2) +
     ":" +
-    ("00" + dateTime.getUTCSeconds()).slice(-2);
+    ("00" + dateTime.getUTCSeconds()).slice(-2) +
+    utcOffset;
   return dateTime;
 };
 
@@ -451,42 +453,6 @@ io.on("connection", async (socket) => {
     }
   });
 });
-
-//JKJK
-// io.on('connection', async (socket) => {
-//     socket.join(socket.username);
-//     socket.on('message', async (message) => {
-
-//         try {
-//             // Get current match id of user
-//             var sql = `
-//                 SELECT user_match.id
-//                 FROM user_match
-//                 JOIN users on users.id = user_match.userId
-//                 WHERE users.username = '${socket.username}' AND user_match.unmatchedTime IS NULL`;
-
-//             var result = await queryPromiseAdapter(sql);
-//             if (result.length === 0) {
-//                 return new Error('Could not find current match id of user');
-//             }
-//             const matchId = result[0].id;
-
-//             // Insert the message into the message table
-//             const createdTime = getCurrentDateTimeAsString();
-//             sql = `INSERT INTO message (matchId, content, createdTime)
-//                 VALUES (?, ?, ?);`;
-//             result = await queryPromiseAdapterWithPlaceholders(sql, [matchId, message.content, createdTime]);
-
-//             // Emit the message to the matched user
-//             io.to(message.matchedUsername).emit('message', message.content);
-//         }
-//         catch (err) {
-//             console.log(err)
-//             return err;
-//         }
-
-//     });
-// });
 
 app.get(
   "/message-history-of-current-match",
@@ -575,10 +541,6 @@ const getPreviousMatches = async() => {
       
   const previousMatches = await queryPromiseAdapter(sql);
   return previousMatches;
-  /* console.log(result)
-  const previousMatches = result.map(obj => [obj.userId, obj.matchedUserId]);
-  console.log(previousMatches);
-  return previousMatches;   */
 }
 
 

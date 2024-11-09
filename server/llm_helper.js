@@ -205,6 +205,7 @@ const matchUsers = async () => {
 
 const getCurrentDateTimeAsString = () => {
   var dateTime = new Date();
+  var utcOffset = "+00:00";
   dateTime =
     dateTime.getUTCFullYear() +
     "-" +
@@ -216,7 +217,8 @@ const getCurrentDateTimeAsString = () => {
     ":" +
     ("00" + dateTime.getUTCMinutes()).slice(-2) +
     ":" +
-    ("00" + dateTime.getUTCSeconds()).slice(-2);
+    ("00" + dateTime.getUTCSeconds()).slice(-2) +
+    utcOffset;
   return dateTime;
 };
 
