@@ -6,8 +6,11 @@ import { createServer } from "node:http";
 import { Server } from "socket.io";
 import processMatches from "./llm_helper.js";
 import {db, queryPromiseAdapter, queryPromiseAdapterWithPlaceholders} from "./database_connection.js";
+import dotenv from "dotenv";
 
-const SECRET_KEY = "secret";
+dotenv.config({ path: ".env" });
+const TOKEN_SECRET_KEY = process.env.TOKEN_SECRET_KEY;
+
 const bioAttributes = [
   "age",
   "occupation",
@@ -36,7 +39,7 @@ const verifyToken = (req, res, next) => {
   if (!token) {
     return res.status(404).json("Please provide login token");
   } else {
-    jwt.verify(token, SECRET_KEY, (err, decoded) => {
+    jwt.verify(token, TOKEN_SECRET_KEY, (err, decoded) => {
       if (err) {
         res.status(401).json();
       } else {
@@ -70,7 +73,7 @@ app.post('/login', async (req, res, next) => {
             const match = await bcrypt.compare(req.body.password, hashedPassword);
             console.log(match);
             if (match) {
-                const token = jwt.sign({username: req.body.username}, SECRET_KEY);
+                const token = jwt.sign({username: req.body.username}, TOKEN_SECRET_KEY);
                 res.status(200).json({token: token});
             } else {
                 res.status(401).json('Invalid password');
@@ -91,7 +94,7 @@ app.post("/admin-login", (req, res, next) => {
     req.body.username === ADMIN_USERNAME &&
     req.body.password === ADMIN_PASSWORD
   ) {
-    const token = jwt.sign({ ADMIN_USERNAME }, SECRET_KEY);
+    const token = jwt.sign({ ADMIN_USERNAME }, TOKEN_SECRET_KEY);
     res.json({ admin_token: token });
   } else {
     return res.status(400).json("Invalid admin credentials");
@@ -137,7 +140,7 @@ app.post('/register', verifyRegistration, async (req, res, next) => {
         db.query(sql, [req.body.username, hashedPassword], (err, result) => {
             if (err) return res.status(500).json(`Server side error: ${err}`);
 
-            const token = jwt.sign({username: req.body.username}, SECRET_KEY);
+            const token = jwt.sign({username: req.body.username}, TOKEN_SECRET_KEY);
             res.status(201).json({token: token});
         });
     } catch (err) {
@@ -331,7 +334,7 @@ io.use((socket, next) => {
     return next(new Error("Authentication error: No token provided"));
   }
 
-  jwt.verify(token, SECRET_KEY, (err, decoded) => {
+  jwt.verify(token, TOKEN_SECRET_KEY, (err, decoded) => {
     if (err) {
       return next(new Error("Authentication error: Invalid token"));
     }
