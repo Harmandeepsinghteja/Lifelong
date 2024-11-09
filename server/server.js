@@ -23,10 +23,9 @@ const ADMIN_USERNAME = "admin";
 const ADMIN_PASSWORD = "password";
 
 const app = express();
-app.use(express.json()); // If this is not included, then we will not be able to read json sent in request body
-app.use(cors()); ///// If program doesn't work it could be because I excluded stuff inside cors
-// If this is not included, then the frontend will not be able to recieve responses from the api
-// because the browsers will not allow it.
+app.use(express.json());    // If this is not included, then we will not be able to read json sent in request body
+app.use(cors());            // If this is not included, then the frontend will not be able to recieve responses from the api
+                            // because the browsers will not allow it.
 
 const server = createServer(app);
 const io = new Server(server, { cors: { origin: "*" } });
@@ -59,22 +58,26 @@ const attachUserIdToRequest = (req, res, next) => {
   });
 };
 
-app.post("/login", (req, res, next) => {
-  const sql = "SELECT * FROM users WHERE username = ? AND password = ?";
-  db.query(sql, [req.body.username, req.body.password], (err, data) => {
-    if (err) {
-      return res.status(500).json(`Server side error: ${err}`);
-    }
-    if (data.length === 0) {
-      return res
-        .status(404)
-        .json("Username does not exist or password is incorrect");
-    }
-    const username = data[0].username;
-    const token = jwt.sign({ username }, SECRET_KEY);
+app.post('/login', async (req, res, next) => {
+    try {
+        const sql = `SELECT password FROM users WHERE username = ?`;
+        db.query(sql, [req.body.username], async (err, results) => {
+            if (err) return res.status(500).json(`Server side error: ${err}`);
+            if (results.length === 0) return res.status(404).json('User not found');
 
-    res.json({ token: token });
-  });
+            const hashedPassword = results[0].password;
+            const match = await bcrypt.compare(req.body.password, hashedPassword);
+            if (match) {
+                const token = jwt.sign({username: req.body.username}, SECRET_KEY);
+                res.status(200).json({token: token});
+            } else {
+                res.status(401).json('Invalid password');
+            }
+        });
+    } 
+    catch (err) {
+        res.status(500).json(`Server side error: ${err}`);
+    }
 });
 
 // POST /admin-login
@@ -122,16 +125,22 @@ const verifyRegistration = (req, res, next) => {
 // Input: username, password (attached to request body)
 // Output: 201 Created status, and the response will contain the token.
 // Alternate Output: Some other status like 404 or 500, and the response will contain the error message.
-app.post("/register", verifyRegistration, (req, res, next) => {
-  const sql = `INSERT INTO users (username, password)
-                 VALUES (?, ?)`;
-  db.query(sql, [req.body.username, req.body.password], (err, result) => {
-    if (err)
-      return res.status(500).json({ error: `Server side error: ${err}` });
 
-    const token = jwt.sign({ username: req.body.username }, SECRET_KEY);
-    res.status(201).json({ token: token });
-  });
+const saltRounds = 10;
+app.post('/register', verifyRegistration, async (req, res, next) => {
+    try {
+        const hashedPassword = await bcrypt.hash(req.body.password, saltRounds);
+        const sql = `INSERT INTO users (username, password)
+                     VALUES (?, ?)`;
+        db.query(sql, [req.body.username, hashedPassword], (err, result) => {
+            if (err) return res.status(500).json(`Server side error: ${err}`);
+
+            const token = jwt.sign({username: req.body.username}, SECRET_KEY);
+            res.status(201).json({token: token});
+        });
+    } catch (err) {
+        res.status(500).json(`Server side error: ${err}`);
+    }
 });
 
 const verifyBioPostRequestBody = (req, res, next) => {

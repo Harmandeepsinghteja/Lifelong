@@ -6,7 +6,7 @@ DROP TABLE IF EXISTS users;
 CREATE TABLE users (
     id int PRIMARY KEY AUTO_INCREMENT,
     username varchar(50) UNIQUE NOT NULL,
-    password varchar(50) NOT NULL
+    password varchar(255) NOT NULL
 );
 
 DROP TABLE IF EXISTS bio;
