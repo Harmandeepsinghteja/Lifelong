@@ -4,7 +4,12 @@ import jwt from "jsonwebtoken";
 import { createServer } from "node:http";
 import { Server } from "socket.io";
 import processMatches from "./llm_helper.js";
-import {db, queryPromiseAdapter, queryPromiseAdapterWithPlaceholders} from "./database_connection.js";
+import {
+  db,
+  queryPromiseAdapter,
+  queryPromiseAdapterWithPlaceholders,
+} from "./database_connection.js";
+import bcrypt from "bcrypt";
 
 const SECRET_KEY = "secret";
 const bioAttributes = [
@@ -23,9 +28,9 @@ const ADMIN_USERNAME = "admin";
 const ADMIN_PASSWORD = "password";
 
 const app = express();
-app.use(express.json());    // If this is not included, then we will not be able to read json sent in request body
-app.use(cors());            // If this is not included, then the frontend will not be able to recieve responses from the api
-                            // because the browsers will not allow it.
+app.use(express.json()); // If this is not included, then we will not be able to read json sent in request body
+app.use(cors()); // If this is not included, then the frontend will not be able to recieve responses from the api
+// because the browsers will not allow it.
 
 const server = createServer(app);
 const io = new Server(server, { cors: { origin: "*" } });
@@ -58,26 +63,25 @@ const attachUserIdToRequest = (req, res, next) => {
   });
 };
 
-app.post('/login', async (req, res, next) => {
-    try {
-        const sql = `SELECT password FROM users WHERE username = ?`;
-        db.query(sql, [req.body.username], async (err, results) => {
-            if (err) return res.status(500).json(`Server side error: ${err}`);
-            if (results.length === 0) return res.status(404).json('User not found');
+app.post("/login", async (req, res, next) => {
+  try {
+    const sql = `SELECT password FROM users WHERE username = ?`;
+    db.query(sql, [req.body.username], async (err, results) => {
+      if (err) return res.status(500).json(`Server side error: ${err}`);
+      if (results.length === 0) return res.status(404).json("User not found");
 
-            const hashedPassword = results[0].password;
-            const match = await bcrypt.compare(req.body.password, hashedPassword);
-            if (match) {
-                const token = jwt.sign({username: req.body.username}, SECRET_KEY);
-                res.status(200).json({token: token});
-            } else {
-                res.status(401).json('Invalid password');
-            }
-        });
-    } 
-    catch (err) {
-        res.status(500).json(`Server side error: ${err}`);
-    }
+      const hashedPassword = results[0].password;
+      const match = await bcrypt.compare(req.body.password, hashedPassword);
+      if (match) {
+        const token = jwt.sign({ username: req.body.username }, SECRET_KEY);
+        res.status(200).json({ token: token });
+      } else {
+        res.status(401).json("Invalid password");
+      }
+    });
+  } catch (err) {
+    res.status(500).json(`Server side error: ${err}`);
+  }
 });
 
 // POST /admin-login
@@ -127,20 +131,20 @@ const verifyRegistration = (req, res, next) => {
 // Alternate Output: Some other status like 404 or 500, and the response will contain the error message.
 
 const saltRounds = 10;
-app.post('/register', verifyRegistration, async (req, res, next) => {
-    try {
-        const hashedPassword = await bcrypt.hash(req.body.password, saltRounds);
-        const sql = `INSERT INTO users (username, password)
+app.post("/register", verifyRegistration, async (req, res, next) => {
+  try {
+    const hashedPassword = await bcrypt.hash(req.body.password, saltRounds);
+    const sql = `INSERT INTO users (username, password)
                      VALUES (?, ?)`;
-        db.query(sql, [req.body.username, hashedPassword], (err, result) => {
-            if (err) return res.status(500).json(`Server side error: ${err}`);
+    db.query(sql, [req.body.username, hashedPassword], (err, result) => {
+      if (err) return res.status(500).json(`Server side error: ${err}`);
 
-            const token = jwt.sign({username: req.body.username}, SECRET_KEY);
-            res.status(201).json({token: token});
-        });
-    } catch (err) {
-        res.status(500).json(`Server side error: ${err}`);
-    }
+      const token = jwt.sign({ username: req.body.username }, SECRET_KEY);
+      res.status(201).json({ token: token });
+    });
+  } catch (err) {
+    res.status(500).json(`Server side error: ${err}`);
+  }
 });
 
 const verifyBioPostRequestBody = (req, res, next) => {
@@ -302,7 +306,7 @@ app.get(
       metaData.bioComplete = true;
 
       // Find the id and username of the matched user. If nothing is returned, it means that the user is not matched
-      sql = `SELECT users.id, users.username
+      sql = `SELECT users.id, users.username, user_match.reason
             FROM users
             JOIN user_match on users.id = user_match.matchedUserId
             WHERE user_match.userId = ${req.userId} AND user_match.unmatchedTime IS NULL;`;
@@ -315,6 +319,8 @@ app.get(
       // If user is matched, add id and username of the matched user to the return object
       metaData.matchedUserId = result[0].id;
       metaData.matchedUsername = result[0].username;
+      metaData.matchedReason = result[0].reason;
+
       return res.json(metaData);
     } catch (err) {
       return res.status(500).json(`Server side error: ${err}`);
@@ -378,7 +384,7 @@ The message object must be of the format:
 */
 io.on("connection", async (socket) => {
   socket.join(socket.username);
-  console.log(`${socket.username} has connected`)
+  console.log(`${socket.username} has connected`);
   socket.on("messageHistory", async (message) => {
     try {
       // Get messages sent by the user or the matched user for their current match
@@ -447,42 +453,6 @@ io.on("connection", async (socket) => {
   });
 });
 
-//JKJK
-// io.on('connection', async (socket) => {
-//     socket.join(socket.username);
-//     socket.on('message', async (message) => {
-
-//         try {
-//             // Get current match id of user
-//             var sql = `
-//                 SELECT user_match.id
-//                 FROM user_match
-//                 JOIN users on users.id = user_match.userId
-//                 WHERE users.username = '${socket.username}' AND user_match.unmatchedTime IS NULL`;
-
-//             var result = await queryPromiseAdapter(sql);
-//             if (result.length === 0) {
-//                 return new Error('Could not find current match id of user');
-//             }
-//             const matchId = result[0].id;
-
-//             // Insert the message into the message table
-//             const createdTime = getCurrentDateTimeAsString();
-//             sql = `INSERT INTO message (matchId, content, createdTime)
-//                 VALUES (?, ?, ?);`;
-//             result = await queryPromiseAdapterWithPlaceholders(sql, [matchId, message.content, createdTime]);
-
-//             // Emit the message to the matched user
-//             io.to(message.matchedUsername).emit('message', message.content);
-//         }
-//         catch (err) {
-//             console.log(err)
-//             return err;
-//         }
-
-//     });
-// });
-
 app.get(
   "/message-history-of-current-match",
   verifyToken,
@@ -506,8 +476,7 @@ app.get(
 
 const getCurrentUserMatches = async () => {
   // Get all user matches (both current and previous), but with the reverse version of each match eliminated
-  const sql = 
-      `WITH user_match_with_usernames AS (
+  const sql = `WITH user_match_with_usernames AS (
           SELECT \`user\`.username, matched_user.username as matchedUsername, user_match.reason
           FROM user_match
           JOIN users as \`user\` on user_match.userId = \`user\`.id
@@ -533,19 +502,17 @@ const getCurrentUserMatches = async () => {
 
   const result = await queryPromiseAdapter(sql);
   return result;
-}
+};
 
 // TODO: Implement verifyAdminToken, which decrypts the admin token and checks if the decrypted username matches the admin username
-app.get('/user-matches', verifyToken, async (req, res, next) => {
+app.get("/user-matches", verifyToken, async (req, res, next) => {
   try {
-      const result = await getCurrentUserMatches();
-      return res.json(result);
-  }
-  catch (err) {
-      return res.status(500).json(`Server side error: ${err}`);
+    const result = await getCurrentUserMatches();
+    return res.json(result);
+  } catch (err) {
+    return res.status(500).json(`Server side error: ${err}`);
   }
 });
-
 
 const getUnmatchedUserIdsWithBio = async () => {
   const sql = `SELECT bio.userId
@@ -556,76 +523,90 @@ const getUnmatchedUserIdsWithBio = async () => {
           WHERE user_match.unmatchedTime IS NULL
       ) 
       ORDER BY bio.userId;`;
-      
-  const result = await queryPromiseAdapter(sql);
-  const unmatchedUserIds = result.map(obj => obj.userId);
-  return unmatchedUserIds;  
-}
 
-const getPreviousMatches = async() => {
+  const result = await queryPromiseAdapter(sql);
+  const unmatchedUserIds = result.map((obj) => obj.userId);
+  return unmatchedUserIds;
+};
+
+const getPreviousMatches = async () => {
   const sql = `SELECT user_match.userId, user_match.matchedUserId
   FROM user_match
   WHERE user_match.unmatchedTime IS NOT NULL
   ORDER BY user_match.userId;`;
-      
+
   const previousMatches = await queryPromiseAdapter(sql);
   return previousMatches;
   /* console.log(result)
   const previousMatches = result.map(obj => [obj.userId, obj.matchedUserId]);
   console.log(previousMatches);
   return previousMatches;   */
-}
-
+};
 
 // TODO: Implement verifyAdminToken, which decrypts the admin token and checks if the decrypted username matches the admin username
-app.post('/match-users-manual', async (req, res, next) => {
+app.post("/match-users-manual", async (req, res, next) => {
   const unmatchedUserIdsWithBio = await getUnmatchedUserIdsWithBio();
   const previousMatches = await getPreviousMatches();
 
   const potentialMatches = {};
-  unmatchedUserIdsWithBio.forEach(id => {
-      potentialMatches[id] = unmatchedUserIdsWithBio.filter(elem => elem !== id)        
+  unmatchedUserIdsWithBio.forEach((id) => {
+    potentialMatches[id] = unmatchedUserIdsWithBio.filter(
+      (elem) => elem !== id
+    );
   });
 
   // For each user id, remove the user ids that this user has been matched with before
-  for (const {userId, matchedUserId} of previousMatches) {
-      if (potentialMatches[userId]) {
-          potentialMatches[userId] = potentialMatches[userId].filter(elem => elem != matchedUserId)
-      }
+  for (const { userId, matchedUserId } of previousMatches) {
+    if (potentialMatches[userId]) {
+      potentialMatches[userId] = potentialMatches[userId].filter(
+        (elem) => elem != matchedUserId
+      );
+    }
   }
-  
+
   // now randomly make matches
   // To check if an id has already been matched, keep a set/list of newly matches user ids
   const newMatchedUserIds = [];
   const newMatchedUserIdPairs = [];
   for (var userId in potentialMatches) {
-      userId = parseInt(userId);
-      if (newMatchedUserIds.includes(userId)) {
-          continue;
-      }
-      // Remove ids that are already matched from list of potential match ids
-      const potentialMatchIds = potentialMatches[userId].filter(elem => !newMatchedUserIds.includes(elem));
-      if (potentialMatchIds.length > 0) {
-          const matchedUserId = potentialMatchIds[Math.floor(Math.random() * potentialMatchIds.length)];
-          newMatchedUserIds.push(userId);
-          newMatchedUserIds.push(matchedUserId);
-          newMatchedUserIdPairs.push([userId, matchedUserId]);
-
-      }
+    userId = parseInt(userId);
+    if (newMatchedUserIds.includes(userId)) {
+      continue;
+    }
+    // Remove ids that are already matched from list of potential match ids
+    const potentialMatchIds = potentialMatches[userId].filter(
+      (elem) => !newMatchedUserIds.includes(elem)
+    );
+    if (potentialMatchIds.length > 0) {
+      const matchedUserId =
+        potentialMatchIds[Math.floor(Math.random() * potentialMatchIds.length)];
+      newMatchedUserIds.push(userId);
+      newMatchedUserIds.push(matchedUserId);
+      newMatchedUserIdPairs.push([userId, matchedUserId]);
+    }
   }
   // TODO: insert pairs in newMatchedUserIdPairs (as well as their corresponding reverse pairs) into user_matches table in database
   for (var pair of newMatchedUserIdPairs) {
-      try {
-          const sql = `INSERT INTO user_match (userId, matchedUserId, reason, createdTime)
+    try {
+      const sql = `INSERT INTO user_match (userId, matchedUserId, reason, createdTime)
               VALUES 
                 (?, ?, ?, ?);`;
-          const createdTime = getCurrentDateTimeAsString();
-          queryPromiseAdapterWithPlaceholders(sql, [pair[0], pair[1], 'dummy reason', createdTime]);
-          queryPromiseAdapterWithPlaceholders(sql, [pair[1], pair[0], 'dummy reason', createdTime]);
-      }
-      catch (err) {
-          return res.status(500).json(`Server side error: ${err}`);
-      }
+      const createdTime = getCurrentDateTimeAsString();
+      queryPromiseAdapterWithPlaceholders(sql, [
+        pair[0],
+        pair[1],
+        "dummy reason",
+        createdTime,
+      ]);
+      queryPromiseAdapterWithPlaceholders(sql, [
+        pair[1],
+        pair[0],
+        "dummy reason",
+        createdTime,
+      ]);
+    } catch (err) {
+      return res.status(500).json(`Server side error: ${err}`);
+    }
   }
 
   const currentUserMatches = await getCurrentUserMatches();
@@ -634,31 +615,34 @@ app.post('/match-users-manual', async (req, res, next) => {
 
 // Endpoint to get user matches
 app.post("/match-users", async (req, res) => {
-    try {
-      await processMatches();
-      const currentUserMatches = await getCurrentUserMatches();
-      console.log("Result is:");
-      console.log(currentUserMatches);
-      res.json(currentUserMatches);
-    } catch (err) {
-      res.status(500).json({ error: err.message });
-    }
-  });
-
-
-app.delete('/unmatch', verifyToken, attachUserIdToRequest, async (req, res, next) => {
   try {
+    await processMatches();
+    const currentUserMatches = await getCurrentUserMatches();
+    console.log("Result is:");
+    console.log(currentUserMatches);
+    res.json(currentUserMatches);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete(
+  "/unmatch",
+  verifyToken,
+  attachUserIdToRequest,
+  async (req, res, next) => {
+    try {
       // Get messages sent by the user or the matched user for their current match
       const sql = `UPDATE user_match
           SET unmatchedTime = now()
           WHERE user_match.userId = ${req.userId} OR user_match.matchedUserId = ${req.userId}; `;
       const result = await queryPromiseAdapter(sql);
       res.status(204).json();
-  }
-  catch (err) {
+    } catch (err) {
       return res.status(500).json(`Server side error: ${err}`);
+    }
   }
-});
+);
 
 // If the PORT environment variable is not set in the computer, then use port 3000 by default
 server.listen(process.env.PORT || 3000, () => {

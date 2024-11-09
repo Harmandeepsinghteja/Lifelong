@@ -1,5 +1,17 @@
 USE lifelong_db;
 
+
+-- Disable foreign key checks
+SET FOREIGN_KEY_CHECKS = 0;
+-- Clear existing data
+DELETE FROM users;
+DELETE FROM bio;
+DELETE FROM user_match;
+DELETE FROM message;
+
+-- Enable foreign key checks
+SET FOREIGN_KEY_CHECKS = 1;
+
 -- the password is the hashed version 1234
 INSERT INTO users
 VALUES (1,'charlie', '$2b$10$n/kx5u.k1xtNzokB752OseDHr2tWz6R2O1hn61LQHXtoAH0kUohZW'),
@@ -18,36 +30,7 @@ VALUES (1,'charlie', '$2b$10$n/kx5u.k1xtNzokB752OseDHr2tWz6R2O1hn61LQHXtoAH0kUoh
   (14, 'heidi', '$2b$10$n/kx5u.k1xtNzokB752OseDHr2tWz6R2O1hn61LQHXtoAH0kUohZW'),
   (15, 'ivan', '$2b$10$n/kx5u.k1xtNzokB752OseDHr2tWz6R2O1hn61LQHXtoAH0kUohZW'),
   (16, 'judy', '$2b$10$n/kx5u.k1xtNzokB752OseDHr2tWz6R2O1hn61LQHXtoAH0kUohZW');
-
--- Disable foreign key checks
-SET FOREIGN_KEY_CHECKS = 0;
--- Clear existing data
-DELETE FROM users;
-DELETE FROM bio;
-DELETE FROM user_match;
-DELETE FROM message;
-
--- Enable foreign key checks
-SET FOREIGN_KEY_CHECKS = 1;
-
-INSERT INTO users
-VALUES (1,'charlie','1234'),
-	(2,'snoopy','1234'),
-	(3,'linus','1234'),
-	(4,'lucy','1234'),
-	(5,'john','1234'),
-	(6,'joe','1234'),
-	(7, 'alice', '1234'),
-  (8, 'bob', '1234'),
-  (9, 'carol', '1234'),
-  (10, 'dave', '1234'),
-  (11, 'eve', '1234'),
-  (12, 'frank', '1234'),
-  (13, 'grace', '1234'),
-  (14, 'heidi', '1234'),
-  (15, 'ivan', '1234'),
-  (16, 'judy', '1234');
-
+  
 INSERT INTO bio 
 VALUES 
   (1,99,'Hardware Engineer','Male','Polynesian','Antarctica','Easter Island','Single','Casual Chat','Weekly','I love coding, reading sci-fi novels, and hiking. Big foodie here!'),
