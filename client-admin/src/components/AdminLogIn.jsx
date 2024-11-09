@@ -35,7 +35,7 @@ export default function AdminLogIn() {
     fetch("http://localhost:3000/admin-login", {
       method: "post",
       body: JSON.stringify({
-        adminUsername: adminUsername,
+        username: adminUsername,
         password: password,
       }),
       headers: { "Content-Type": "application/json" },
@@ -46,7 +46,7 @@ export default function AdminLogIn() {
       })
       .then((data) => {
         if (responseStatus === 200) {
-          localStorage.setItem("adminToken", data.adminToken);
+          localStorage.setItem("admin_token", data.admin_token);
           setIsLoggedIn(true);
         } else {
           alert(data);

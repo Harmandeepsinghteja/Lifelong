@@ -3,15 +3,18 @@ import LogIn from "@/components/log-in";
 import Chat from "@/components/chat";
 import NoMatch from "@/components/NoMatch";
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Landing = () => {
   const { isLoggedIn } = useSharedState();
-  const [matchedUsername, setMatchedUsername] = useState("");
+
+  const {matchedUsername, setMatchedUsername} = useSharedState();
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (isLoggedIn) {
-      fetch("http://localhost:3000/user-meta-data", {
+      fetch("http://localhost:3000/user-metadata", {
         headers: {
           token: localStorage.getItem("token"),
         },
@@ -23,6 +26,11 @@ const Landing = () => {
           return response.json();
         })
         .then((data) => {
+
+          if (!data.bioComplete) {
+            navigate('/bio');
+          }
+
           setMatchedUsername(data.matchedUsername);
           console.log(data);
         })

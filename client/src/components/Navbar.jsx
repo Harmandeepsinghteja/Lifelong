@@ -4,14 +4,13 @@ import UserIconDropdown from "./UserIconWithDropDown";
 import { useEffect, useState } from "react";
 
 export default function Navbar() {
-  const { isLoggedIn, setIsLoggedIn } = useSharedState();
+  const { isLoggedIn, setIsLoggedIn,matchedUsername, setMatchedUsername } = useSharedState();
   const [username, setUsername] = useState("");
-  const [matchedUsername, setMatchedUsername] = useState("");
   const [error, setError] = useState("");
 
   useEffect(() => {
     if (isLoggedIn) {
-      fetch("http://localhost:3000/user-meta-data", {
+      fetch("http://localhost:3000/user-metadata", {
         headers: {
           token: localStorage.getItem("token"),
         },

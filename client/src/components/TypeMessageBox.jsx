@@ -2,13 +2,13 @@ import React, { useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Send } from "lucide-react";
-import io from "socket.io-client";
+import { useSharedState } from "../MyContext";
 
-const socket = io("http://localhost:3000");
 
 export default function MessageInput({ onSendMessage }) {
   const [newMessage, setNewMessage] = React.useState("");
   const textareaRef = useRef(null);
+  const { socket } = useSharedState();
 
   useEffect(() => {
     adjustTextareaHeight();
@@ -24,7 +24,7 @@ export default function MessageInput({ onSendMessage }) {
 
   const handleSendMessage = () => {
     if (newMessage.trim() !== "") {
-      socket.emit("sendMessage", { sender: "user", text: newMessage });
+      socket.emit("message", { content: newMessage });
       setNewMessage("");
     }
   };
@@ -54,6 +54,7 @@ export default function MessageInput({ onSendMessage }) {
           className="flex-grow bg-zinc-800 text-zinc-100 border-zinc-700 focus:border-zinc-600 min-h-[2.5rem] max-h-[200px] resize-none text-sm sm:text-base md:text-lg"
           style={{ overflow: "auto" }}
         />
+
         <Button
           type="submit"
           size="icon"
