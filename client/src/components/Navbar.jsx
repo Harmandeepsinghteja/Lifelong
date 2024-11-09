@@ -4,9 +4,8 @@ import UserIconDropdown from "./UserIconWithDropDown";
 import { useEffect, useState } from "react";
 
 export default function Navbar() {
-  const { isLoggedIn, setIsLoggedIn } = useSharedState();
+  const { isLoggedIn, setIsLoggedIn,matchedUsername, setMatchedUsername } = useSharedState();
   const [username, setUsername] = useState("");
-  const [matchedUsername, setMatchedUsername] = useState("");
   const [error, setError] = useState("");
 
   useEffect(() => {

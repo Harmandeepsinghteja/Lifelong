@@ -5,6 +5,7 @@ const MyContext = createContext();
 
 const MyProvider = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [matchedUsername, setMatchedUsername] = useState(false);
   const [socket, setSocket] = useState(null);
 
   useEffect(() => {
@@ -26,7 +27,7 @@ const MyProvider = ({ children }) => {
 
   return (
     <MyContext.Provider
-      value={{ isLoggedIn, setIsLoggedIn, socket, setSocket }}
+      value={{ isLoggedIn, setIsLoggedIn, matchedUsername, setMatchedUsername, socket, setSocket }}
     >
       {children}
     </MyContext.Provider>
