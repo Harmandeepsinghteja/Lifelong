@@ -22,7 +22,7 @@ export default function AdminContent() {
     const admin_token = localStorage.getItem("admin_token");
     const response = await fetch("http://localhost:3000/user-matches", {
       headers: {
-        token: admin_token,
+        admin_token: admin_token,
       },
     });
     const data = await response.json();
@@ -43,7 +43,7 @@ export default function AdminContent() {
       const response = await fetch("http://localhost:3000/match-users", {
         method: "POST",
         headers: {
-          token: admin_token,
+          admin_token: admin_token,
         },
       });
 
@@ -52,8 +52,6 @@ export default function AdminContent() {
       }
 
       const data = await response.json();
-      console.log("data", data);
-
       setTableData(data);
       setUserCount(data.length);
       setMatchedUserCount(data.filter((item) => item.matchedUsername).length);

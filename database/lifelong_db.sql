@@ -33,8 +33,8 @@ CREATE TABLE user_match (
     userId int NOT NULL,
     matchedUserId int NOT NULL,
     reason VARCHAR(1000),
-    createdTime DATETIME NOT NULL,
-    unmatchedTime DATETIME DEFAULT NULL,
+    createdTime TIMESTAMP NOT NULL,
+    unmatchedTime TIMESTAMP DEFAULT NULL,
     FOREIGN KEY (userId) REFERENCES users(id),
     FOREIGN KEY (matchedUserId) REFERENCES users(id)
 );
