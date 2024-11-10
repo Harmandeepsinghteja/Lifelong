@@ -2,8 +2,8 @@ import express from "express";
 import jwt from "jsonwebtoken";
 import bcrypt from 'bcrypt';
 
-import { db } from "../utils/databaseConnection.js";
-import { TOKEN_SECRET_KEY, ADMIN_USERNAME, ADMIN_PASSWORD } from "../utils/environmentVariables.js";
+import { db } from "../config/databaseConnection.js";
+import { TOKEN_SECRET_KEY, ADMIN_USERNAME, ADMIN_PASSWORD } from "../config/environmentVariables.js";
 
 export const registerRouter = express.Router();
 export const loginRouter = express.Router();

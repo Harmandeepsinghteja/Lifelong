@@ -50,7 +50,6 @@ export default function UserBioForm() {
         setExchangeType(bioData.exchangeType || "");
         setMessageFrequency(bioData.messageFrequency || "");
         setBio(bioData.bio || "");
-        console.log(bioData);
 
         const metaDataResponse = await fetch(
           "http://localhost:3000/user-metadata",
@@ -62,7 +61,6 @@ export default function UserBioForm() {
         );
         const metaData = await metaDataResponse.json();
         setIsBioComplete(metaData.bioComplete);
-        console.log(metaData);
       } catch (error) {
         setError("Error fetching data");
         console.log(error);

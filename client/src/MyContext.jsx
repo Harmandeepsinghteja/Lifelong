@@ -16,8 +16,6 @@ const MyProvider = ({ children }) => {
       try {
         newSocket.connect();
         setSocket(newSocket);
-        console.log("Frontend has connected to socket io");
-        console.log("value of socket: ", newSocket);
       }
       catch (err) {
         console.log("Socket connection error: ", err);

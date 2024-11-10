@@ -1,6 +1,6 @@
 import express from "express";
 
-import {queryPromiseAdapter} from "../utils/databaseConnection.js";
+import {queryPromiseAdapter} from "../config/databaseConnection.js";
 import {verifyToken, attachUserIdToRequest} from '../utils/requestPreprocessing.js';
 
 // GET /user-metadata

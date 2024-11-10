@@ -31,7 +31,6 @@ const Landing = () => {
           }
 
           setMatchedUsername(data.matchedUsername);
-          console.log(data);
         })
         .catch((error) => {
           setError("Error fetching data");
