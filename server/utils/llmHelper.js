@@ -1,13 +1,9 @@
 import dotenv from "dotenv";
 import axios from "axios";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { db, queryPromiseAdapter } from "./database_connection.js";
+import { db } from "./databaseConnection.js";
 
-// Get Keys from .env file
-dotenv.config({ path: ".env" });
-
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+import { OPENAI_API_KEY, GEMINI_API_KEY } from "./environmentVariables.js";
 
 const bioAttributes = [
   "age",
