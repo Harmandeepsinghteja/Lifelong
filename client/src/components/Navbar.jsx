@@ -25,7 +25,6 @@ export default function Navbar() {
           setIsLoggedIn(true);
           setUsername(data.username || "");
           setMatchedUsername(data.matchedUsername);
-          console.log(data);
         })
         .catch((error) => {
           setError("Error fetching data");

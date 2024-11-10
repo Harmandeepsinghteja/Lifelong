@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 
-import {db} from "./databaseConnection.js";
-import { TOKEN_SECRET_KEY, ADMIN_USERNAME } from "./environmentVariables.js";
+import { db } from "../config/databaseConnection.js";
+import { TOKEN_SECRET_KEY, ADMIN_USERNAME } from "../config/environmentVariables.js";
 
 export const verifyToken = (req, res, next) => {
   const token = req.headers.token;

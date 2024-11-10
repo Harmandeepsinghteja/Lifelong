@@ -13,7 +13,6 @@ const MessageLog = () => {
   const { socket } = useSharedState();
 
   useEffect(() => {
-    console.log("login status: ", isLoggedIn);
     fetch("http://localhost:3000/user-metadata", {
       headers: {
         token: localStorage.getItem("token"),
@@ -46,7 +45,6 @@ const MessageLog = () => {
           .then((data) => {
             console.log("setting messages");
             setMessages(data);
-            console.log(data);
             setTimeout(scrollToBottom, 1000); // Scroll to bottom on initial load with delay
           });
       })

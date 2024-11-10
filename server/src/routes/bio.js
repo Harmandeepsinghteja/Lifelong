@@ -1,6 +1,6 @@
 import express from "express";
 
-import {db} from "../utils/databaseConnection.js";
+import { db } from "../config/databaseConnection.js";
 import {verifyToken, attachUserIdToRequest} from '../utils/requestPreprocessing.js';
 
 const bioAttributes = [

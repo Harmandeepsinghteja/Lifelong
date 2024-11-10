@@ -1,6 +1,6 @@
 import express from "express";
 
-import { queryPromiseAdapter, queryPromiseAdapterWithPlaceholders } from "../utils/databaseConnection.js";
+import { queryPromiseAdapter, queryPromiseAdapterWithPlaceholders } from "../config/databaseConnection.js";
 import { verifyToken, attachUserIdToRequest, verifyAdminToken } from '../utils/requestPreprocessing.js';
 import processMatches from "../utils/llmHelper.js";
 import getCurrentDateTimeAsString from "../utils/dateTimeConverter.js";

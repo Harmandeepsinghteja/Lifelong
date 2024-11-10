@@ -5,7 +5,7 @@ import { dirname } from 'path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-dotenv.config({ path: `${__dirname}/../.env` });
+dotenv.config({ path: `${__dirname}/../../.env` });
 
 export const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 export const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
