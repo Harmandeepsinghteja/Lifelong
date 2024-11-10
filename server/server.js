@@ -17,9 +17,9 @@ dotenv.config({ path: ".env" });
 const TOKEN_SECRET_KEY = process.env.TOKEN_SECRET_KEY;
 
 const app = express();
-app.use(express.json());    // If this is not included, then we will not be able to read json sent in request body
-app.use(cors());            // If this is not included, then the frontend will not be able to recieve responses from the api
-                            // because the browsers will not allow it.
+app.use(express.json()); // If this is not included, then we will not be able to read json sent in request body
+app.use(cors()); // If this is not included, then the frontend will not be able to recieve responses from the api
+// because the browsers will not allow it.
 
 const server = createServer(app);
 const io = new Server(server, { cors: { origin: "*" } });
@@ -33,7 +33,6 @@ app.use('/message-history-of-current-match', messageRouter);
 app.use('/user-matches', currentMatchesRouter);
 app.use('/match-users', matchUsersRouter);
 app.use('/unmatch', unmatchUsersRouter)
-
 
 // Middleware for WebSocket connections
 io.use((socket, next) => {
@@ -74,7 +73,7 @@ The message object must be of the format:
 */
 io.on("connection", async (socket) => {
   socket.join(socket.username);
-  console.log(`${socket.username} has connected`)
+  console.log(`${socket.username} has connected`);
   socket.on("messageHistory", async (message) => {
     try {
       // Get messages sent by the user or the matched user for their current match
@@ -142,6 +141,7 @@ io.on("connection", async (socket) => {
     }
   });
 });
+
 
 // If the PORT environment variable is not set in the computer, then use port 3000 by default
 server.listen(process.env.PORT || 3000, () => {
