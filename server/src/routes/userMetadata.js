@@ -31,7 +31,7 @@ userMetadataRouter.get("/", verifyToken, attachUserIdToRequest, async (req, res,
       metaData.bioComplete = true;
 
       // Find the id and username of the matched user. If nothing is returned, it means that the user is not matched
-      sql = `SELECT users.id, users.username
+      sql = `SELECT users.id, users.username, user_match.reason
             FROM users
             JOIN user_match on users.id = user_match.matchedUserId
             WHERE user_match.userId = ${req.userId} AND user_match.unmatchedTime IS NULL;`;
@@ -44,6 +44,7 @@ userMetadataRouter.get("/", verifyToken, attachUserIdToRequest, async (req, res,
       // If user is matched, add id and username of the matched user to the return object
       metaData.matchedUserId = result[0].id;
       metaData.matchedUsername = result[0].username;
+      metaData.matchedReason = result[0].reason;
       return res.json(metaData);
     } catch (err) {
       return res.status(500).json(`Server side error: ${err}`);
