@@ -1,13 +1,9 @@
 import dotenv from "dotenv";
 import axios from "axios";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { db, queryPromiseAdapter } from "./database_connection.js";
 
-// Get Keys from .env file
-dotenv.config({ path: ".env" });
-
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+import { db } from "../config/databaseConnection.js";
+import { OPENAI_API_KEY, GEMINI_API_KEY } from "../config/environmentVariables.js";
 
 const bioAttributes = [
   "age",
@@ -58,10 +54,6 @@ const fetchUsersData = (callback) => {
       callback(null, formattedResults);
     });
 };
-
-
-
-
 
 // Function to send user data to ChatGPT API and get matches
 const matchUsersOpenAI = async (usersData) => {
@@ -114,11 +106,10 @@ const matchUsersGemini = async (usersData) => {
     )}. For each user, please provide multiple interesting matches with a rating for each match. The matches do not need to share the same interests but should be based on complementary or diverse interests. Return the matches in strict JSON format with the following structure: {"matches": [{"userId": <userId>, "matchUserId": <matchUserId>, "reason": <reason>, "rating": <rating>}]}. Ensure that each user is matched only once, and each userId should appear in only one row.`;
 
     const result = await model.generateContent(prompt);
-    // console.log(result.response.text());
-    // Ensure the response is valid JSON
 
+    // Ensure the response is valid JSON
     let jsonResponse = result.response.text();
-    // console.log(jsonResponse);
+    
     // Remove the ```json and ``` markers and trim whitespace
     jsonResponse = jsonResponse.replace(/```json|```/g, "").trim();
 
@@ -155,8 +146,6 @@ const matchUsersGemini = async (usersData) => {
         }
       }
     });
-
-
 
     return { matches: bestMatches };
   } catch (error) {
@@ -205,6 +194,7 @@ const matchUsers = async () => {
 
 const getCurrentDateTimeAsString = () => {
   var dateTime = new Date();
+  var utcOffset = "+00:00";
   dateTime =
     dateTime.getUTCFullYear() +
     "-" +
@@ -216,10 +206,10 @@ const getCurrentDateTimeAsString = () => {
     ":" +
     ("00" + dateTime.getUTCMinutes()).slice(-2) +
     ":" +
-    ("00" + dateTime.getUTCSeconds()).slice(-2);
+    ("00" + dateTime.getUTCSeconds()).slice(-2) +
+    utcOffset;
   return dateTime;
 };
-
 
 const insertMatchesIntoDB = async (matches) => {
   const insertQuery = `INSERT INTO user_match (userId, matchedUserId, createdTime, reason) VALUES (?, ?, ?, ?)`;

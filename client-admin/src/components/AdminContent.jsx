@@ -14,14 +14,15 @@ export default function AdminContent() {
   const [tableData, setTableData] = useState([]);
   const [userCount, setUserCount] = useState(0);
   const [matchedUserCount, setMatchedUserCount] = useState(0);
+  const [loading, setLoading] = useState(false);
 
   const { isLoggedIn, setIsLoggedIn } = useSharedState();
 
   const fetchData = async () => {
     const admin_token = localStorage.getItem("admin_token");
-    const response = await fetch("http://localhost:3000/user-matches", {
+    const response = await fetch(`${import.meta.env.VITE_SERVER_IP_AND_PORT}/user-matches`, {
       headers: {
-        token: admin_token,
+        admin_token: admin_token,
       },
     });
     const data = await response.json();
@@ -37,27 +38,28 @@ export default function AdminContent() {
 
   const runMatchingSequence = async () => {
     const admin_token = localStorage.getItem("admin_token");
-    const response = await fetch("http://localhost:3000/match-users", {
-      method: "POST",
-      headers: {
-        
-        token: admin_token,
-      },
-    });
+    try {
+      setLoading(true);
+      const response = await fetch(`${import.meta.env.VITE_SERVER_IP_AND_PORT}/match-users`, {
+        method: "POST",
+        headers: {
+          admin_token: admin_token,
+        },
+      });
 
-    const data = await response.json();
-    console.log("data")
-    console.log(data)
-    console.log("data end")
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
 
-    setTableData(data);
-    setUserCount(data.length);
-    setMatchedUserCount(data.filter((item) => item.matchedUsername).length);
-
-    setUserCount(data.filter((match) => match.username).length);
-    setMatchedUserCount(
-      data.filter((match) => Boolean(match.matchedUsername)).length
-    );
+      const data = await response.json();
+      setTableData(data);
+      setUserCount(data.length);
+      setMatchedUserCount(data.filter((item) => item.matchedUsername).length);
+    } catch (error) {
+      console.error("Fetch error:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleLogout = () => {
@@ -83,11 +85,13 @@ export default function AdminContent() {
 
             <Button
               onClick={runMatchingSequence}
-              className=" text-sm md:text-xl  bg-transparent text-white border border-white hover:bg-white hover:text-black transition-colors"
+              className="text-sm md:text-xl bg-transparent text-white border border-white hover:bg-white hover:text-black transition-colors"
+              disabled={loading}
             >
-              Run Matching Sequence
+              {loading ? "Loading..." : "Run Matching Sequence"}
             </Button>
           </div>
+
           <Button
             className="self-end justify-self-end text-white border border-white hover:bg-white hover:text-black transition-colors"
             onClick={handleLogout}

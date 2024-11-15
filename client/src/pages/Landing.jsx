@@ -7,13 +7,14 @@ import { useNavigate } from "react-router-dom";
 
 const Landing = () => {
   const { isLoggedIn } = useSharedState();
-  const [matchedUsername, setMatchedUsername] = useState("");
+
+  const { matchedUsername, setMatchedUsername } = useSharedState();
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
     if (isLoggedIn) {
-      fetch("http://localhost:3000/user-metadata", {
+      fetch(`${import.meta.env.VITE_SERVER_IP_AND_PORT}/user-metadata`, {
         headers: {
           token: localStorage.getItem("token"),
         },
@@ -25,13 +26,11 @@ const Landing = () => {
           return response.json();
         })
         .then((data) => {
-
           if (!data.bioComplete) {
-            navigate('/bio');
+            navigate("/bio");
           }
 
           setMatchedUsername(data.matchedUsername);
-          console.log(data);
         })
         .catch((error) => {
           setError("Error fetching data");

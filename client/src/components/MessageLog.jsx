@@ -1,22 +1,19 @@
 import React, { useEffect, useRef, useState } from "react";
-import io from "socket.io-client";
 import { useSharedState } from "../MyContext";
-
-const socket = io("http://localhost:3000", { autoConnect: false });
-const token = localStorage.getItem("token");
-socket.auth = { token };
-socket.connect();
 
 const MessageLog = () => {
   const { isLoggedIn, setIsLoggedIn } = useSharedState();
 
   const [messages, setMessages] = useState([]);
   const [userID, setUserID] = useState([]);
+  const [matchedReason, setMatchedReason] = useState();
+  const [matchedUsername, setMatchedUsername] = useState();
   const messagesEndRef = useRef(null);
   const [error, setError] = useState("");
+  const { socket } = useSharedState();
 
   useEffect(() => {
-    fetch("http://localhost:3000/user-metadata", {
+    fetch(`${import.meta.env.VITE_SERVER_IP_AND_PORT}/user-metadata`, {
       headers: {
         token: localStorage.getItem("token"),
       },
@@ -30,9 +27,11 @@ const MessageLog = () => {
       .then((data) => {
         setIsLoggedIn(true);
         setUserID(data.userID);
+        setMatchedReason(data.matchedReason);
+        setMatchedUsername(data.matchedUsername);
       })
       .then(() => {
-        fetch("http://localhost:3000/message-history-of-current-match", {
+        fetch(`${import.meta.env.VITE_SERVER_IP_AND_PORT}/message-history-of-current-match`, {
           headers: {
             token: localStorage.getItem("token"),
           },
@@ -45,13 +44,7 @@ const MessageLog = () => {
           })
           .then((data) => {
             console.log("setting messages");
-            setMessages(
-              data
-              // data.map((message) => ({
-              //   ...message,
-              // }))
-            );
-            console.log(data);
+            setMessages(data);
             setTimeout(scrollToBottom, 1000); // Scroll to bottom on initial load with delay
           });
       })
@@ -60,17 +53,6 @@ const MessageLog = () => {
         setIsLoggedIn(false);
         console.log(error);
       });
-
-    // socket.on("messageHistory", (initialMessages) => {
-    //   console.log("setting messages");
-    //   setMessages(
-    //     initialMessages.map((message) => ({
-    //       ...message,
-    //     }))
-    //   );
-    //   console.log(messages);
-    //   setTimeout(scrollToBottom, 1000); // Scroll to bottom on initial load with delay
-    // });
 
     socket.on("message", (newMessage) => {
       setMessages((prevMessages) => [
@@ -81,11 +63,6 @@ const MessageLog = () => {
       ]);
       setTimeout(scrollToBottom, 500); // Scroll to bottom when a new message appears with delay
     });
-
-    return () => {
-      socket.off("messageHistory");
-      socket.off("message");
-    };
   }, []);
 
   useEffect(() => {
@@ -131,6 +108,11 @@ const MessageLog = () => {
 
   return (
     <div className="flex flex-col w-full max-w-6xl mx-auto text-zinc-100 p-4 flex-1 overflow-auto">
+      <p className="text-center text-sm text-zinc-400 italic">
+        You have been matched with {matchedUsername} because...
+      </p>
+      <p className="text-center text-zinc-200">{matchedReason}</p>
+
       {messages.length === 0 ? (
         <p className="text-center text-zinc-200">
           Send something to start the chat!

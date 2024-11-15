@@ -1,13 +1,31 @@
-import { createContext, useState, useContext } from "react";
+import { createContext, useState, useEffect, useContext } from "react";
+import io from "socket.io-client";
 
 const MyContext = createContext();
 
 const MyProvider = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [matchedUsername, setMatchedUsername] = useState(false);
+  const [socket, setSocket] = useState(null);
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      const newSocket = io(`${import.meta.env.VITE_SERVER_IP_AND_PORT}`, { autoConnect: false });
+      const token = localStorage.getItem("token");
+      newSocket.auth = { token };
+      try {
+        newSocket.connect();
+        setSocket(newSocket);
+      }
+      catch (err) {
+        console.log("Socket connection error: ", err);
+      }
+    }
+  }, [isLoggedIn]);
 
   return (
     <MyContext.Provider
-      value={{ isLoggedIn, setIsLoggedIn }}
+      value={{ isLoggedIn, setIsLoggedIn, matchedUsername, setMatchedUsername, socket, setSocket }}
     >
       {children}
     </MyContext.Provider>
