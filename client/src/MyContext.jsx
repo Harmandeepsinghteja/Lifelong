@@ -10,7 +10,7 @@ const MyProvider = ({ children }) => {
 
   useEffect(() => {
     if (isLoggedIn) {
-      const newSocket = io("http://localhost:3000", { autoConnect: false });
+      const newSocket = io(`${import.meta.env.VITE_SERVER_IP_AND_PORT}`, { autoConnect: false });
       const token = localStorage.getItem("token");
       newSocket.auth = { token };
       try {

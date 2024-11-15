@@ -36,7 +36,7 @@ export default function LoginForm() {
     console.log("Login attempt with:", { username, password });
 
     var responseStatus;
-    fetch("http://localhost:3000/login", {
+    fetch(`${import.meta.env.VITE_SERVER_IP_AND_PORT}/login`, {
       method: "post",
       body: JSON.stringify({ username: username, password: password }),
       headers: {
