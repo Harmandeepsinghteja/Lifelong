@@ -14,7 +14,7 @@ const Landing = () => {
 
   useEffect(() => {
     if (isLoggedIn) {
-      fetch("http://localhost:3000/user-metadata", {
+      fetch(`${import.meta.env.VITE_SERVER_IP_AND_PORT}/user-metadata`, {
         headers: {
           token: localStorage.getItem("token"),
         },

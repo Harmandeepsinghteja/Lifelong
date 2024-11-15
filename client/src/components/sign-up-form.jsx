@@ -57,7 +57,7 @@ export default function SignUpForm() {
       return;
     }
 
-    fetch("http://localhost:3000/register", {
+    fetch(`${import.meta.env.VITE_SERVER_IP_AND_PORT}/register`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

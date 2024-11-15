@@ -20,7 +20,7 @@ export default function AdminContent() {
 
   const fetchData = async () => {
     const admin_token = localStorage.getItem("admin_token");
-    const response = await fetch("http://localhost:3000/user-matches", {
+    const response = await fetch(`${import.meta.env.VITE_SERVER_IP_AND_PORT}/user-matches`, {
       headers: {
         admin_token: admin_token,
       },
@@ -40,7 +40,7 @@ export default function AdminContent() {
     const admin_token = localStorage.getItem("admin_token");
     try {
       setLoading(true);
-      const response = await fetch("http://localhost:3000/match-users", {
+      const response = await fetch(`${import.meta.env.VITE_SERVER_IP_AND_PORT}/match-users`, {
         method: "POST",
         headers: {
           admin_token: admin_token,

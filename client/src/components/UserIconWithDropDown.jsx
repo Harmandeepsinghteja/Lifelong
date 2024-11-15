@@ -28,7 +28,7 @@ export default function UserIconDropdown({ username }) {
   };
 
   const handleUnmatch = () => {
-    fetch("http://localhost:3000/unmatch", {
+    fetch(`${import.meta.env.VITE_SERVER_IP_AND_PORT}/unmatch`, {
       method: "DELETE",
       headers: {
         token: localStorage.getItem("token"),

@@ -13,7 +13,7 @@ const MessageLog = () => {
   const { socket } = useSharedState();
 
   useEffect(() => {
-    fetch("http://localhost:3000/user-metadata", {
+    fetch(`${import.meta.env.VITE_SERVER_IP_AND_PORT}/user-metadata`, {
       headers: {
         token: localStorage.getItem("token"),
       },
@@ -31,7 +31,7 @@ const MessageLog = () => {
         setMatchedUsername(data.matchedUsername);
       })
       .then(() => {
-        fetch("http://localhost:3000/message-history-of-current-match", {
+        fetch(`${import.meta.env.VITE_SERVER_IP_AND_PORT}/message-history-of-current-match`, {
           headers: {
             token: localStorage.getItem("token"),
           },
