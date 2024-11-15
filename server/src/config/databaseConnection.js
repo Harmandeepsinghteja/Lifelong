@@ -11,14 +11,14 @@ export const db = mysql.createPool({
 });
 
 // Test the database connection pool
-db.getConnection((err, connection) => {
-    if (err) {
-        console.error("Error connecting to the database:", err.stack);
-    } else {
-        console.log("Connected to the database.");
-        connection.release(); // Release the connection back to the pool
-    }
-});
+// db.getConnection((err, connection) => {
+//     if (err) {
+//         console.error("Error connecting to the database:", err.stack);
+//     } else {
+//         console.log("Connected to the database.");
+//         connection.release(); // Release the connection back to the pool
+//     }
+// });
 
 export const queryPromiseAdapter = (sql) => {
     return new Promise((resolve, reject) => {

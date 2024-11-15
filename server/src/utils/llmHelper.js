@@ -21,7 +21,7 @@ const bioAttributes = [
 
 // Function to fetch user data from usertable and bio table using callbacks
 const fetchUsersData = (callback) => {
-    const query = `
+  const query = `
       SELECT DISTINCT users.id as userId, ${bioAttributes
         .map((attr) => `bio.${attr}`)
         .join(", ")}
@@ -38,27 +38,26 @@ const fetchUsersData = (callback) => {
       );
     `;
 
-    db.query(query, (err, results) => {
-      if (err) {
-        console.error("Error fetching user data:", err);
-        return callback(err);
-      }
-      // Format the results as needed
-      const formattedResults = results.map((row) => ({
-        userId: row.userId,
-        bioAttributes: bioAttributes.reduce((acc, attr) => {
-          acc[attr] = row[attr];
-          return acc;
-        }, {}),
-      }));
-      callback(null, formattedResults);
-    });
+  db.query(query, (err, results) => {
+    if (err) {
+      console.error("Error fetching user data:", err);
+      return callback(err);
+    }
+    // Format the results as needed
+    const formattedResults = results.map((row) => ({
+      userId: row.userId,
+      bioAttributes: bioAttributes.reduce((acc, attr) => {
+        acc[attr] = row[attr];
+        return acc;
+      }, {}),
+    }));
+    callback(null, formattedResults);
+  });
 };
 
 // Function to send user data to ChatGPT API and get matches
 const matchUsersOpenAI = async (usersData) => {
   try {
-    
     const response = await axios.post(
       "https://api.openai.com/v1/chat/completions",
       {
@@ -109,7 +108,7 @@ const matchUsersGemini = async (usersData) => {
 
     // Ensure the response is valid JSON
     let jsonResponse = result.response.text();
-    
+
     // Remove the ```json and ``` markers and trim whitespace
     jsonResponse = jsonResponse.replace(/```json|```/g, "").trim();
 
@@ -118,7 +117,7 @@ const matchUsersGemini = async (usersData) => {
       .replace(/^[^{[]+/, "")
       .replace(/[^}\]]+$/, "")
       .trim();
-    
+
     const matches = JSON.parse(jsonResponse).matches;
     const bestMatches = [];
     const matchedUsers = new Set();
@@ -166,9 +165,9 @@ const matchUsers = async () => {
         resolve(data);
       });
     });
-      if (usersData.length <= 1) {
-          return; // Do nothing if usersData has 1 or fewer rows
-      }
+    if (usersData.length <= 1) {
+      return; // Do nothing if usersData has 1 or fewer rows
+    }
     return await matchUsersOpenAI(usersData);
   } catch (error) {
     console.log("Falling back to Gemini API");
@@ -179,10 +178,10 @@ const matchUsers = async () => {
           resolve(data);
         });
       });
-      
-          if (usersData.length <= 1) {
-            return; // Do nothing if usersData has 1 or fewer rows
-          }
+
+      if (usersData.length <= 1) {
+        return; // Do nothing if usersData has 1 or fewer rows
+      }
       return await matchUsersGemini(usersData);
     } catch (err) {
       console.error("Error fetching user data for Gemini API:", err);
@@ -190,7 +189,6 @@ const matchUsers = async () => {
     }
   }
 };
-
 
 const getCurrentDateTimeAsString = () => {
   var dateTime = new Date();
@@ -272,4 +270,5 @@ const processMatches = async () => {
   }
 };
 
+export {matchUsersGemini};
 export default processMatches;
