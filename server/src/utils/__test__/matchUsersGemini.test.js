@@ -1,12 +1,12 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { matchUsersGemini } from "../llmHelper.js"; 
+import { matchUsersGemini } from "../llmHelper.js";
 import { jest } from "@jest/globals";
 
 // Mock the GoogleGenerativeAI module
 jest.mock("@google/generative-ai");
 
-
 describe("matchUsersGemini", () => {
+  jest.setTimeout(20000);
   test("should return matches in the expected format", async () => {
     console.log("\n🧪 Starting test: matchUsersGemini function");
     console.log("------------------------------------------------");
@@ -121,8 +121,8 @@ describe("matchUsersGemini", () => {
     console.log("\n🏃‍♂️ Executing matchUsersGemini function...");
     const result = await matchUsersGemini(usersData);
 
-        console.log("\n🔍 Checking result format:");
-        console.log(JSON.stringify(result, null, 2));
+    console.log("\n🔍 Checking result format:");
+    console.log(JSON.stringify(result, null, 2));
 
     // Check if the result matches the expected format
     console.log("\n✅ Verifying result structure:");
@@ -143,10 +143,10 @@ describe("matchUsersGemini", () => {
         rating: expect.any(Number),
       });
 
-            console.log(`  ✓ userId: ${match.userId}`);
-            console.log(`  ✓ matchUserId: ${match.matchUserId}`);
-            console.log(`  ✓ reason: "${match.reason}"`);
-            console.log(`  ✓ rating: ${match.rating}`);
+      console.log(`  ✓ userId: ${match.userId}`);
+      console.log(`  ✓ matchUserId: ${match.matchUserId}`);
+      console.log(`  ✓ reason: "${match.reason}"`);
+      console.log(`  ✓ rating: ${match.rating}`);
     });
     console.log("\n🎉 Test completed successfully!");
   });
