@@ -1,10 +1,10 @@
 import { test, expect } from "@playwright/test";
 const {createUniqueDatabaseConnection, runSqlFile} = require('../utils/run-sql-file')
-const base_url = 'http://localhost:5173/';
+const base_url = 'http://localhost:5175/';
 
 const db = createUniqueDatabaseConnection();
 
-test.describe('Register', () => {
+test.describe('Test register functionality', () => {
   test.beforeEach(async ({ page }) => {
     //clean database
     runSqlFile(db, '../db_scripts/clean.sql')
@@ -55,13 +55,10 @@ test.describe('Register', () => {
 
   // TC_003
   test('Verify showing error messages when username already exists', async ({ page }) => {
-    // prepare data
-    runSqlFile(db, '../db_scripts/matched-users.sql');
-    // go to sign up page again and use the same username and password to sign up
     await page.goto(base_url+'signup')
-    await page.getByPlaceholder('Username').fill('TestUser');
-    await page.getByPlaceholder('Create a password').fill('TU_123');
-    await page.getByPlaceholder('Confirm password').fill('TU_123');
+    await page.getByPlaceholder('Username').fill('charlie');
+    await page.getByPlaceholder('Create a password').fill('User_123');
+    await page.getByPlaceholder('Confirm password').fill('User_123');
     await page.getByLabel('I consent:').check();
     // expect username already exists
     page.once('dialog', async (dialog) => {
