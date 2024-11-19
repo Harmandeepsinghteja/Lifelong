@@ -1,80 +1,75 @@
+require('dotenv').config();
+const base_url = process.env.TEST_URL;
 import { test, expect } from "@playwright/test";
-const {createUniqueDatabaseConnection, runSqlFile} = require('../utils/run-sql-file')
-const base_url = 'http://localhost:5175/';
 
-const db = createUniqueDatabaseConnection();
-
-test.describe('Test bio functionality', () => {
-    test.beforeEach(async ({ page }) => {
-        runSqlFile(db, '../db_scripts/clean.sql');
-        await page.goto(base_url)
+//TC_010
+test('Test the functionality of creating a profile', async ({page}) => {
+    await page.goto(base_url);
+    await page.getByRole('link', { name: 'Sign Up Here' }).click();
+    await page.getByPlaceholder('Choose a username').click();
+    await page.getByPlaceholder('Choose a username').fill('TestUser10');
+    await page.getByPlaceholder('Create a password').click();
+    await page.getByPlaceholder('Create a password').fill('TU_123');
+    await page.getByPlaceholder('Confirm password').click();
+    await page.getByPlaceholder('Confirm password').fill('TU_123');
+    await page.locator('form div').filter({ hasText: 'I consent:' }).click();
+    page.once('dialog', dialog => {
+        console.log(`Dialog message: ${dialog.message()}`);
+        dialog.dismiss().catch(() => {});
     });
+    await page.getByRole('button', { name: 'Sign Up' }).click();
+    await page.getByLabel('How old are you?').click();
+    await page.getByLabel('How old are you?').fill('20');
+    await page.getByLabel('What do you do for living?').click();
+    await page.getByLabel('What do you do for living?').fill('Farmer');
+    await page.getByLabel('Man', { exact: true }).click();
+    await page.getByLabel('Asian').click();
+    await page.getByLabel('Where do you live now?').click();
+    await page.getByLabel('Australia').click();
+    await page.getByLabel('Where was your home country?').click();
+    await page.getByLabel('Argentina').getByText('Argentina').click();
+    await page.locator('div').filter({ hasText: /^Single$/ }).click();
+    await page.getByLabel('Casual Chat').click();
+    await page.getByLabel('Weekly').click();
+    await page.getByPlaceholder('Share your interests, hobbies').click();
+    await page.getByPlaceholder('Share your interests, hobbies').fill('I love fishing.');
+    page.once('dialog', dialog => {
+        console.log(`Dialog message: ${dialog.message()}`);
+        dialog.dismiss().catch(() => {});
+    });
+    await page.getByRole('button', { name: 'Submit' }).click();
+    await expect(page.locator('#root')).toContainText('We are in');
+})
 
-    test.afterAll(() => {
-        // Close the db
-        db.end((endErr) => {
-            if (endErr) {
-                console.error('Error closing db:', endErr);
-            } else {
-                console.log('db closed.');
-            }
-        });
-    })
-
-    //TC_010
-    test('Test the functionality of creating a profile', async ({page}) => {
-        //login to a user account with no bio
-        await page.getByRole('heading', {name: 'Login'}).toBeVisible;
-        await page.getByLabel('Username').fill('joe');
-        await page.getByLabel('Password').fill('User_123');
-        await page.getByRole('button', {name: 'Log in'}).click();
-        await expect(page.locator('body')).toContainText('Bio');
-        //start fill in info
-        await page.getByLabel('How old are you?').fill('20');
-        await page.getByLabel('What do you do for living?').fill('Farmer');
-        await page.getByLabel('Man', {exact: true}).click();
-        await page.getByLabel('Prefer not to say', {exact: true}).click();
-        await page.getByLabel('Where do you live now?').click();
-        await page.getByText('Australia').click();
-        await page.locator('button#homeCountry[role="combobox"] + select').selectOption('Prefer not to say')
-        await page.locator('text="Marital status:" + *').locator(`button#option-Single[role="radio"]`).click();
-        await page.locator(`button#option-Casual Chat[role="radio"]`).click();
-        await page.locator(`button#option-Weekly[role="radio"]`).click();
-        await page.getByPlaceholder('Share your interests', {exact: false}).fill('I love fishing');
-        page.once('dialog', async (dialog) => {
-            await expect(dialog.message()).toContain('success');
-            await dialog.accept();
-        })
-        await page.getByRole('button', {name: 'Submit'}).click();
-        await expect(pagge.locator('body')).toContain('We are in');
-    })
-
-    //TC_011
-    test('Verify showing error messages when not entering all fields.', async ({page}) => {
-        //login to a user account with no bio
-        await page.getByRole('heading', {name: 'Login'}).toBeVisible;
-        await page.getByLabel('Username').fill('joe');
-        await page.getByLabel('Password').fill('User_123');
-        await page.getByRole('button', {name: 'Log in'}).click();
-        await expect(page.locator('body')).toContainText('Bio');
-        //start fill in info
-        await page.getByLabel('How old are you?').fill('25');
-        await page.getByLabel('What do you do for living?').fill('Game Designer');
-        await page.getByText('What is your gender?').locator(`button#option-Man[role="radio"]`).click();
-        await page.getByText('What is your ethnicity?').locator(`button#option-Prefer not to say[role="radio"]`).click();
-        await page.locator('button#Country[role="combobox"] + select').selectOption('Poland')
-        // don't fill home country
-        // await page.locator('button#homeCountry[role="combobox"] + select').selectOption('Prefer not to say')
-        await page.getByText('Marital status:').locator(`button#option-Married[role="radio"]`).click();
-        await page.locator(`button#option-Letter[role="radio"]`).click();
-        await page.locator(`button#option-Monthly[role="radio"]`).click();
-        await page.getByPlaceholder('Share your interests', {exact: false}).fill('I love playing video games and designing.');
-        page.once('dialog', async (dialog) => {
-            await expect(dialog.message()).toContain('Please fill in all required fields');
-            await dialog.accept();
-        })
-        await page.getByRole('button', {name: 'Submit'}).click();
-    })
-
-
+//TC_011
+test('test showing error messages when not entering all fields.', async ({page}) => {
+    await page.goto(base_url);
+    await page.getByRole('link', { name: 'Sign Up Here' }).click();
+    await page.getByPlaceholder('Choose a username').click();
+    await page.getByPlaceholder('Choose a username').fill('TestUser11');
+    await page.getByPlaceholder('Create a password').click();
+    await page.getByPlaceholder('Create a password').fill('TU_123');
+    await page.getByPlaceholder('Confirm password').click();
+    await page.getByPlaceholder('Confirm password').fill('TU_123');
+    await page.getByLabel('I consent:').check();
+    page.once('dialog', dialog => {
+        console.log(`Dialog message: ${dialog.message()}`);
+        dialog.dismiss().catch(() => {});
+    });
+    await page.getByRole('button', { name: 'Sign Up' }).click();
+    await page.getByLabel('How old are you?').click();
+    await page.getByLabel('How old are you?').fill('20');
+    await page.getByLabel('What do you do for living?').click();
+    await page.getByLabel('What do you do for living?').fill('Farmer');
+    await page.getByLabel('Man', { exact: true }).click();
+    await page.getByLabel('Asian').click();
+    await page.getByLabel('Where do you live now?').click();
+    await page.getByLabel('Australia').click();
+    await page.getByLabel('Single').click();
+    await page.getByLabel('Casual Chat').click();
+    await page.getByLabel('Weekly').click();
+    await page.getByPlaceholder('Share your interests, hobbies').click();
+    await page.getByPlaceholder('Share your interests, hobbies').fill('I love fishing.');
+    await page.getByRole('button', { name: 'Submit' }).click();
+    await expect(page.getByRole('alert')).toContainText('Please fill in all required fields.');
 })
