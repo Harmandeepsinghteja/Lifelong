@@ -147,10 +147,9 @@ matchUsersRouter.post("/", verifyAdminToken, async (req, res) => {
 
 unmatchUsersRouter.delete('/', verifyToken, attachUserIdToRequest, async (req, res, next) => {
   try {
-    // Get messages sent by the user or the matched user for their current match
     const sql = `UPDATE user_match
             SET unmatchedTime = now()
-            WHERE user_match.userId = ${req.userId} OR user_match.matchedUserId = ${req.userId}; `;
+            WHERE (user_match.userId = ${req.userId} OR user_match.matchedUserId = ${req.userId}) AND unmatchedTime IS NULL; `;
     const result = await queryPromiseAdapter(sql);
     res.status(204).json();
   }
