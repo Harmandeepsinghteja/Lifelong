@@ -1,6 +1,12 @@
+import { test, expect } from "@playwright/test";
+import { createUniqueDatabaseConnection, runSqlFile } from "../utils/run-sql-file";
 require('dotenv').config();
 const base_url = process.env.TEST_URL;
-import { test, expect } from "@playwright/test";
+const db = createUniqueDatabaseConnection();
+test.describe("Test Case Group: Bio", ()=>{
+  test.beforeAll(()=>{
+    runSqlFile(db, "../db_scripts/clean.sql");
+  })
 
 //TC_010
 test('Test the functionality of creating a profile', async ({page}) => {
@@ -72,4 +78,5 @@ test('test showing error messages when not entering all fields.', async ({page})
     await page.getByPlaceholder('Share your interests, hobbies').fill('I love fishing.');
     await page.getByRole('button', { name: 'Submit' }).click();
     await expect(page.getByRole('alert')).toContainText('Please fill in all required fields.');
+});
 })

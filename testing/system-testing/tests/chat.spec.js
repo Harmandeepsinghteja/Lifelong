@@ -1,6 +1,12 @@
+import { test, expect } from "@playwright/test";
+import { createUniqueDatabaseConnection, runSqlFile } from "../utils/run-sql-file";
 require('dotenv').config();
 const base_url = process.env.TEST_URL;
-import { test, expect } from "@playwright/test";
+const db = createUniqueDatabaseConnection();
+test.describe("Test Case Group: Chat", ()=>{
+  test.beforeAll(()=>{
+    runSqlFile(db, "../db_scripts/clean.sql");
+  })
 
 //TC_015
 test('Test if users can send messages', async ({ page }) => {
@@ -32,3 +38,4 @@ test('Test if user can unmatch', async ({ page }) => {
     await page.getByText('Unmatch').click();
     await expect(page.locator('#root')).toContainText('We are in');
   });
+})

@@ -1,6 +1,12 @@
 import { test, expect } from "@playwright/test";
+import { createUniqueDatabaseConnection, runSqlFile } from "../utils/run-sql-file";
 require('dotenv').config();
 const base_url = process.env.TEST_URL;
+const db = createUniqueDatabaseConnection();
+test.describe("Test Case Group: Authentication", ()=>{
+  test.beforeAll(()=>{
+    runSqlFile(db, "../db_scripts/clean.sql");
+  })
 
 //TC_004
 test('Test the functionality of logging in an existing account when user has bio and matched penpal', async ({ page }) => {
@@ -74,4 +80,5 @@ test('Test the functionality of logging out', async ({ page }) => {
     await page.getByRole('button', {name: 'C'}).click()
     await page.getByText('Log out').click()
     await expect(page.locator('body')).toContainText('Log in')
+});
 })

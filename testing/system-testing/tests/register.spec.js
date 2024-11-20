@@ -1,6 +1,12 @@
 import { test, expect } from "@playwright/test";
+import { createUniqueDatabaseConnection, runSqlFile } from "../utils/run-sql-file";
 require('dotenv').config();
 const base_url = process.env.TEST_URL;
+const db = createUniqueDatabaseConnection();
+test.describe("Test Case Group: Register", ()=>{
+  test.beforeAll(()=>{
+    runSqlFile(db, "../db_scripts/clean.sql");
+  })
 
 // TC_001
 test('test the functionality of signing up', async ({ page }) => {
@@ -72,3 +78,4 @@ test('Verify showing error messages when username already exists', async ({ page
   await page.getByRole('button', { name: 'Sign Up' }).click();
   await expect(page.getByRole('heading')).toContainText('Sign Up');
 });
+})
