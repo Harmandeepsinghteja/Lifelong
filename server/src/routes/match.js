@@ -136,17 +136,22 @@ const processMatchesManual = async () => {
 // TODO: Implement verifyAdminToken, which decrypts the admin token and checks if the decrypted username matches the admin username
 matchUsersRouter.post("/", verifyAdminToken, async (req, res) => {
   try {
-    await processMatches();
-  } catch (err) {
-    // If LLM throws error, then manually match the users
+    
     try {
+      await processMatches();
+    } 
+    catch (err) { 
+      // If LLM throws error, then manually match the users
+      console.log("Fallng back to manual matching");
       await processMatchesManual()
-      const currentUserMatches = await getCurrentUserMatches();
-      res.json(currentUserMatches);
     }
-    catch (err) {
-      res.status(500).json({ error: err.message });
-    }
+
+    const currentUserMatches = await getCurrentUserMatches();
+    res.json(currentUserMatches);
+
+  } 
+  catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 
