@@ -145,7 +145,6 @@ const matchUsersGemini = async (usersData) => {
         }
       }
     });
-
     return { matches: bestMatches };
   } catch (error) {
     console.error(
