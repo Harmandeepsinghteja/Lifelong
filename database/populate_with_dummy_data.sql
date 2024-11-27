@@ -1,5 +1,8 @@
 USE lifelong_db;
 
+-- Allow updating or deleting a table without using a WHERE clause
+SET SQL_SAFE_UPDATES = 0;
+
 -- Disable foreign key checks
 SET FOREIGN_KEY_CHECKS = 0;
 -- Clear existing data
@@ -50,8 +53,8 @@ VALUES
 
 INSERT INTO user_match
 VALUES 
-	(1, 1, 2, 'Shared Interests', '2023-10-11 06:10:00', NULL),
-  (2, 2, 1, 'Shared Interests', '2023-10-11 06:10:00', NULL),
+	(1, 1, 2, 'While both enjoy coding, sci-fi, and hiking, the difference in age and cultural backgrounds (Antarctica/Easter Island vs. Canada/India) could lead to interesting conversations and perspectives. The difference in gender identity also adds to the diversity of the match.', '2023-10-11 06:10:00', NULL),
+  (2, 2, 1, 'While both enjoy coding, sci-fi, and hiking, the difference in age and cultural backgrounds (Antarctica/Easter Island vs. Canada/India) could lead to interesting conversations and perspectives. The difference in gender identity also adds to the diversity of the match.', '2023-10-11 06:10:00', NULL),
 
   (3, 1, 3, 'Proximity', '2023-10-12 06:10:00', '2023-10-13 06:10:00'),
   (4, 3, 1, 'Proximity', '2023-10-12 06:10:00', '2023-10-13 06:10:00'),
