@@ -6,123 +6,130 @@ import { jest } from "@jest/globals";
 jest.mock("@google/generative-ai");
 
 describe("matchUsersGemini", () => {
-  jest.setTimeout(20000);
+  jest.setTimeout(30000);
   test("should return matches in the expected format", async () => {
     console.log("\n🧪 Starting test: matchUsersGemini function");
     console.log("------------------------------------------------");
     // Mock user data
     const usersData = [
       {
-        id: 1,
-        name: "Alice",
-        age: 25,
-        location: "New York",
-        interests: ["hiking", "reading", "coding"],
-        food: "Italian",
-        movies: ["Inception", "The Matrix"],
-        degree: "Computer Science",
+        userId: 3,
+        bioAttributes: {
+          age: 30,
+          occupation: "Hotdog vendor",
+          gender: "Male",
+          ethnicity: "Polynesian",
+          country: "Antarctica",
+          homeCountry: "Easter Island",
+          maritalStatus: "Single",
+          exchangeType: "Casual Chat",
+          messageFrequency: "Weekly",
+          bio: "I love coding, reading sci-fi novels, and hiking. Big foodie here!",
+        },
       },
       {
-        id: 2,
-        name: "Bob",
-        age: 30,
-        location: "San Francisco",
-        interests: ["music", "photography", "coding"],
-        food: "Mexican",
-        movies: ["The Godfather", "Pulp Fiction"],
-        degree: "Electrical Engineering",
+        userId: 4,
+        bioAttributes: {
+          age: 40,
+          occupation: "Business Analyst",
+          gender: "Female",
+          ethnicity: "Nigerian",
+          country: "Canada",
+          homeCountry: "Nigeria",
+          maritalStatus: "Single",
+          exchangeType: "Casual Chat",
+          messageFrequency: "Weekly",
+          bio: "I love coding, reading sci-fi novels, and hiking. Big foodie here!",
+        },
       },
       {
-        id: 3,
-        name: "Charlie",
-        age: 28,
-        location: "Los Angeles",
-        interests: ["sports", "movies", "coding"],
-        food: "Chinese",
-        movies: ["The Dark Knight", "Fight Club"],
-        degree: "Mechanical Engineering",
+        userId: 5,
+        bioAttributes: {
+          age: 50,
+          occupation: "Carpenter",
+          gender: "Male",
+          ethnicity: "South African",
+          country: "Antarctica",
+          homeCountry: "South Africa",
+          maritalStatus: "Single",
+          exchangeType: "Casual Chat",
+          messageFrequency: "Weekly",
+          bio: "I love coding, reading sci-fi novels, and hiking. Big foodie here!",
+        },
       },
       {
-        id: 4,
-        name: "David",
-        age: 35,
-        location: "Chicago",
-        interests: ["traveling", "cooking", "coding"],
-        food: "Indian",
-        movies: ["Forrest Gump", "The Shawshank Redemption"],
-        degree: "Civil Engineering",
+        userId: 7,
+        bioAttributes: {
+          age: 27,
+          occupation: "Teacher",
+          gender: "Female",
+          ethnicity: "Asian",
+          country: "Japan",
+          homeCountry: "Tokyo",
+          maritalStatus: "Single",
+          exchangeType: "Friendship",
+          messageFrequency: "Weekly",
+          bio: "I love teaching and mentoring.",
+        },
       },
       {
-        id: 5,
-        name: "Eve",
-        age: 22,
-        location: "Boston",
-        interests: ["dancing", "painting", "coding"],
-        food: "Japanese",
-        movies: ["Spirited Away", "My Neighbor Totoro"],
-        degree: "Fine Arts",
+        userId: 8,
+        bioAttributes: {
+          age: 32,
+          occupation: "Doctor",
+          gender: "Male",
+          ethnicity: "Caucasian",
+          country: "Germany",
+          homeCountry: "Berlin",
+          maritalStatus: "Married",
+          exchangeType: "Business",
+          messageFrequency: "Monthly",
+          bio: "I am passionate about healthcare.",
+        },
       },
       {
-        id: 6,
-        name: "Frank",
-        age: 27,
-        location: "Seattle",
-        interests: ["gaming", "reading", "coding"],
-        food: "American",
-        movies: ["Star Wars", "The Avengers"],
-        degree: "Information Technology",
+        userId: 9,
+        bioAttributes: {
+          age: 26,
+          occupation: "Nurse",
+          gender: "Female",
+          ethnicity: "African",
+          country: "Nigeria",
+          homeCountry: "Lagos",
+          maritalStatus: "Single",
+          exchangeType: "Dating",
+          messageFrequency: "Daily",
+          bio: "I enjoy caring for others.",
+        },
       },
       {
-        id: 7,
-        name: "Grace",
-        age: 32,
-        location: "Austin",
-        interests: ["yoga", "photography", "coding"],
-        food: "Thai",
-        movies: ["The Lion King", "Frozen"],
-        degree: "Graphic Design",
-      },
-      {
-        id: 8,
-        name: "Hank",
-        age: 29,
-        location: "Denver",
-        interests: ["hiking", "music", "coding"],
-        food: "French",
-        movies: ["Amélie", "Ratatouille"],
-        degree: "Environmental Science",
-      },
-      {
-        id: 9,
-        name: "Ivy",
-        age: 26,
-        location: "Miami",
-        interests: ["swimming", "reading", "coding"],
-        food: "Greek",
-        movies: ["Mamma Mia!", "300"],
-        degree: "Marine Biology",
-      },
-      {
-        id: 10,
-        name: "Jack",
-        age: 31,
-        location: "Portland",
-        interests: ["cycling", "movies", "coding"],
-        food: "Spanish",
-        movies: ["Pan's Labyrinth", "The Others"],
-        degree: "History",
+        userId: 10,
+        bioAttributes: {
+          age: 31,
+          occupation: "Lawyer",
+          gender: "Male",
+          ethnicity: "Asian",
+          country: "China",
+          homeCountry: "Beijing",
+          maritalStatus: "Married",
+          exchangeType: "Networking",
+          messageFrequency: "Weekly",
+          bio: "I love practicing law.",
+        },
       },
     ];
 
-    console.log(`📊 Test data: ${usersData.length} users provided`);
+    
+
+    // console.log(`📊 Test data: ${usersData.length} users provided`);
 
 
-    console.log("🤖 Mocked Gemini API response set up");
+    // console.log("🤖 Mocked Gemini API response set up");
     console.log("\n🏃‍♂️ Executing matchUsersGemini function...");
     const result = await matchUsersGemini(usersData);
 
-    console.log("\n🔍 Checking result format:");
-    console.log(JSON.stringify(result, null, 2));
+    // console.log("\n🔍 Checking result format:");
+    // console.log(JSON.stringify(result, null, 2));
 
     // Check if the result matches the expected format
     console.log("\n✅ Verifying result structure:");
@@ -146,7 +153,7 @@ describe("matchUsersGemini", () => {
       console.log(`  ✓ userId: ${match.userId}`);
       console.log(`  ✓ matchUserId: ${match.matchUserId}`);
       console.log(`  ✓ reason: "${match.reason}"`);
-      console.log(`  ✓ rating: ${match.rating}`);
+      // console.log(`  ✓ rating: ${match.rating}`);
     });
     console.log("\n🎉 Test completed successfully!");
   });

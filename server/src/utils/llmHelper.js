@@ -123,6 +123,7 @@ const matchUsersGemini = async (usersData) => {
     const matchedUsers = new Set();
 
     // Find the best match for each user based on the rating
+    matches.sort((a, b) => b.rating - a.rating);
     matches.forEach((match) => {
       if (
         !matchedUsers.has(match.userId) &&
@@ -145,6 +146,7 @@ const matchUsersGemini = async (usersData) => {
         }
       }
     });
+    console.log(bestMatches);
 
     return { matches: bestMatches };
   } catch (error) {
