@@ -80,7 +80,7 @@ const getPreviousMatches = async () => {
   return previousMatches;
 }
 
-matchUsersRouter.post('/manual', verifyAdminToken, async (req, res, next) => {
+const processMatchesManual = async () => {
   const unmatchedUserIdsWithBio = await getUnmatchedUserIdsWithBio();
   const previousMatches = await getPreviousMatches();
 
@@ -96,7 +96,7 @@ matchUsersRouter.post('/manual', verifyAdminToken, async (req, res, next) => {
     }
   }
 
-  // now randomly make matches
+  // Now randomly make matches
   // To check if an id has already been matched, keep a set/list of newly matches user ids
   const newMatchedUserIds = [];
   const newMatchedUserIdPairs = [];
@@ -116,41 +116,50 @@ matchUsersRouter.post('/manual', verifyAdminToken, async (req, res, next) => {
     }
   }
 
+  // Insert the new matches into the match table
   for (var pair of newMatchedUserIdPairs) {
     try {
       const sql = `INSERT INTO user_match (userId, matchedUserId, reason, createdTime)
                 VALUES 
                   (?, ?, ?, ?);`;
       const createdTime = getCurrentDateTimeAsString();
-      queryPromiseAdapterWithPlaceholders(sql, [pair[0], pair[1], 'dummy reason', createdTime]);
-      queryPromiseAdapterWithPlaceholders(sql, [pair[1], pair[0], 'dummy reason', createdTime]);
+      await queryPromiseAdapterWithPlaceholders(sql, [pair[0], pair[1], 'Unable to provide reason', createdTime]);
+      await queryPromiseAdapterWithPlaceholders(sql, [pair[1], pair[0], 'Unable to provide reason', createdTime]);
     }
     catch (err) {
-      return res.status(500).json(`Server side error: ${err}`);
+      console.error("Error error with manual matching:", err);
+      throw err;
     }
   }
-
-  const currentUserMatches = await getCurrentUserMatches();
-  return res.status(201).json(currentUserMatches);
-});
+}
 
 // TODO: Implement verifyAdminToken, which decrypts the admin token and checks if the decrypted username matches the admin username
 matchUsersRouter.post("/", verifyAdminToken, async (req, res) => {
   try {
-    await processMatches();
+    
+    try {
+      await processMatches();
+    } 
+    catch (err) { 
+      // If LLM throws error, then manually match the users
+      console.log("Fallng back to manual matching");
+      await processMatchesManual()
+    }
+
     const currentUserMatches = await getCurrentUserMatches();
     res.json(currentUserMatches);
-  } catch (err) {
+
+  } 
+  catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
 unmatchUsersRouter.delete('/', verifyToken, attachUserIdToRequest, async (req, res, next) => {
   try {
-    // Get messages sent by the user or the matched user for their current match
     const sql = `UPDATE user_match
             SET unmatchedTime = now()
-            WHERE user_match.userId = ${req.userId} OR user_match.matchedUserId = ${req.userId}; `;
+            WHERE (user_match.userId = ${req.userId} OR user_match.matchedUserId = ${req.userId}) AND unmatchedTime IS NULL; `;
     const result = await queryPromiseAdapter(sql);
     res.status(204).json();
   }

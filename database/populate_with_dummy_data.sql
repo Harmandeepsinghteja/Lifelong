@@ -1,5 +1,7 @@
 USE lifelong_db;
 
+-- Allow updating or deleting a table without using a WHERE clause
+SET SQL_SAFE_UPDATES = 0;
 
 -- Disable foreign key checks
 SET FOREIGN_KEY_CHECKS = 0;
@@ -33,26 +35,26 @@ VALUES (1,'charlie', '$2b$10$n/kx5u.k1xtNzokB752OseDHr2tWz6R2O1hn61LQHXtoAH0kUoh
   
 INSERT INTO bio 
 VALUES 
-  (1,99,'Hardware Engineer','Male','Polynesian','Antarctica','Easter Island','Single','Casual Chat','Weekly','I love coding, reading sci-fi novels, and hiking. Big foodie here!'),
+  (1,99,'Hardware Engineer','Male','African','Antarctica','Easter Island','Single','Casual Chat','Weekly','I love coding, reading sci-fi novels, and hiking. Big foodie here!'),
   (2,28,'Software Developer','Nonbinary','Asian','Canada','India','Single','Casual Chat','Weekly','I love coding, reading sci-fi novels, and hiking. Big foodie here!'),
-  (3,30,'Hotdog vendor','Male','Polynesian','Antarctica','Easter Island','Single','Casual Chat','Weekly','I love coding, reading sci-fi novels, and hiking. Big foodie here!'),
-  (4,40,'Business Analyst','Female','Nigerian','Canada','Nigeria','Single','Casual Chat','Weekly','I love coding, reading sci-fi novels, and hiking. Big foodie here!'),
-  (5,50,'Carpenter','Male','South African','Antarctica','South Africa','Single','Casual Chat','Weekly','I love coding, reading sci-fi novels, and hiking. Big foodie here!'),
-  (7, 27, 'Teacher', 'Female', 'Asian', 'Japan', 'Tokyo', 'Single', 'Friendship', 'Weekly', 'I love teaching and mentoring.'),
-  (8, 32, 'Doctor', 'Male', 'Caucasian', 'Germany', 'Berlin', 'Married', 'Business', 'Monthly', 'I am passionate about healthcare.'),
-  (9, 26, 'Nurse', 'Female', 'African', 'Nigeria', 'Lagos', 'Single', 'Dating', 'Daily', 'I enjoy caring for others.'),
-  (10, 31, 'Lawyer', 'Male', 'Asian', 'China', 'Beijing', 'Married', 'Networking', 'Weekly', 'I love practicing law.'),
-  (11, 23, 'Artist', 'Female', 'Caucasian', 'France', 'Paris', 'Single', 'Friendship', 'Monthly', 'I am passionate about art and creativity.'),
-  (12, 34, 'Chef', 'Male', 'Hispanic', 'Spain', 'Madrid', 'Married', 'Business', 'Daily', 'I love cooking and experimenting with recipes.'),
-  (13, 28, 'Photographer', 'Female', 'Asian', 'South Korea', 'Seoul', 'Single', 'Dating', 'Weekly', 'I enjoy capturing moments through photography.'),
-  (14, 36, 'Writer', 'Male', 'Caucasian', 'USA', 'Los Angeles', 'Married', 'Networking', 'Monthly', 'I am passionate about writing and storytelling.'),
-  (15, 27, 'Musician', 'Female', 'African', 'Brazil', 'Rio de Janeiro', 'Single', 'Friendship', 'Daily', 'I love playing music and performing.'),
-  (16, 29, 'Actor', 'Male', 'Asian', 'India', 'Delhi', 'Single', 'Dating', 'Weekly', 'I enjoy acting and being on stage.');
+  (3,30,'Hotdog vendor','Man','European','Antarctica','Easter Island','Single','Casual Chat','Weekly','I love coding, reading sci-fi novels, and hiking. Big foodie here!'),
+  (4,40,'Business Analyst','Woman','Indegenous Peoples','Canada','Nigeria','Single','Casual Chat','Weekly','I love coding, reading sci-fi novels, and hiking. Big foodie here!'),
+  (5,50,'Carpenter','Man','Latino/Hsipanic','Antarctica','South Africa','Single','Casual Chat','Weekly','I love coding, reading sci-fi novels, and hiking. Big foodie here!'),
+  (7, 27, 'Teacher', 'Woman', 'Prefer not to say', 'Japan', 'Tokyo', 'Single', 'Letter', 'Weekly', 'I love teaching and mentoring.'),
+  (8, 32, 'Doctor', 'Man', 'African', 'Germany', 'Germany', 'Married', 'Letter', 'Monthly', 'I am passionate about healthcare.'),
+  (9, 26, 'Nurse', 'Woman', 'Asian', 'Nigeria', 'Ghana', 'Single', 'Letter', 'Daily', 'I enjoy caring for others.'),
+  (10, 31, 'Lawyer', 'Man', 'European', 'Canada', 'China', 'Married', 'Casual Chat', 'Weekly', 'I love practicing law.'),
+  (11, 23, 'Artist', 'Woman', 'Indegenous Peoples', 'Canada', 'France', 'Single', 'Casual Chat', 'Monthly', 'I am passionate about art and creativity.'),
+  (12, 34, 'Chef', 'Man', 'Latino/Hsipanic', 'Spain', 'Croatia', 'Married', 'Casual Chat', 'Daily', 'I love cooking and experimenting with recipes.'),
+  (13, 28, 'Photographer', 'Woman', 'Asian', 'South Korea', 'South Korea', 'Single', 'Casual Chat', 'Weekly', 'I enjoy capturing moments through photography.'),
+  (14, 36, 'Writer', 'Man', 'European', 'Canada', 'Mexico', 'Married', 'Casual Chat', 'Monthly', 'I am passionate about writing and storytelling.'),
+  (15, 27, 'Musician', 'Woman', 'African', 'Brazil', 'Canada', 'Single', 'Casual Chat', 'Daily', 'I love playing music and performing.'),
+  (16, 29, 'Actor', 'Man', 'Asian', 'India', 'Canada', 'Single', 'Casual Chat', 'Weekly', 'I enjoy acting and being on stage.');
 
 INSERT INTO user_match
 VALUES 
-	(1, 1, 2, 'Shared Interests', '2023-10-11 06:10:00', NULL),
-  (2, 2, 1, 'Shared Interests', '2023-10-11 06:10:00', NULL),
+	(1, 1, 2, 'While both enjoy coding, sci-fi, and hiking, the difference in age and cultural backgrounds (Antarctica/Easter Island vs. Canada/India) could lead to interesting conversations and perspectives. The difference in gender identity also adds to the diversity of the match.', '2023-10-11 06:10:00', NULL),
+  (2, 2, 1, 'While both enjoy coding, sci-fi, and hiking, the difference in age and cultural backgrounds (Antarctica/Easter Island vs. Canada/India) could lead to interesting conversations and perspectives. The difference in gender identity also adds to the diversity of the match.', '2023-10-11 06:10:00', NULL),
 
   (3, 1, 3, 'Proximity', '2023-10-12 06:10:00', '2023-10-13 06:10:00'),
   (4, 3, 1, 'Proximity', '2023-10-12 06:10:00', '2023-10-13 06:10:00'),
@@ -62,6 +64,6 @@ VALUES
 
 INSERT INTO `message` 
 VALUES 
-	(1, 1, 'hello, this is a message from charlie','2024-11-03 19:55:33'),
-	(2, 1 ,'another message from charlie','2024-11-03 19:56:08'),
-	(3, 2, 'this is a message from snoopy','2024-11-03 19:57:44');
+	(1, 1, 'Hello, this is a message from Charlie','2024-11-03 19:55:33'),
+	(2, 1 ,'Another message from Charlie','2024-11-03 19:56:08'),
+	(3, 2, 'This is a message from Snoopy','2024-11-03 19:57:44');

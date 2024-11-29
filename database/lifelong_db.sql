@@ -1,6 +1,9 @@
 CREATE DATABASE IF NOT EXISTS lifelong_db;
 USE lifelong_db;
 
+DROP TABLE IF EXISTS bio;
+DROP TABLE IF EXISTS message;
+DROP TABLE IF EXISTS user_match;
 DROP TABLE IF EXISTS users;
 
 CREATE TABLE users (
@@ -8,8 +11,6 @@ CREATE TABLE users (
     username varchar(50) UNIQUE NOT NULL,
     password varchar(255) NOT NULL
 );
-
-DROP TABLE IF EXISTS bio;
 
 CREATE TABLE bio (
     userId INT PRIMARY KEY,
@@ -25,8 +26,6 @@ CREATE TABLE bio (
     bio VARCHAR(256) NOT NULL,
     FOREIGN KEY (userId) REFERENCES users(id)
 );
-
-DROP TABLE IF EXISTS user_match;
 
 CREATE TABLE user_match (
     id int PRIMARY KEY AUTO_INCREMENT,
@@ -46,24 +45,3 @@ CREATE TABLE message (
     createdTime TIMESTAMP NOT NULL,
     FOREIGN KEY (matchId) REFERENCES user_match(id) 
 );
-
--- DROP TABLE IF EXISTS user_match;
-
--- CREATE TABLE user_match (
---   userId int,
---   matchId int,
---   PRIMARY KEY (userId, matchId),
---   FOREIGN KEY (userId) REFERENCES users(id),
---   FOREIGN KEY (matchId) REFERENCES matches(id);
--- );
-
--- DROP TABLE IF EXISTS matches;
-
--- CREATE TABLE matches (
---   id int PRIMARY KEY AUTO_INCREMENT,
---   createdTime TIMESTAMP NOT NULL,
---   unmatchedTime TIMESTAMP DEFAULT NULL
--- );
-
-
-
