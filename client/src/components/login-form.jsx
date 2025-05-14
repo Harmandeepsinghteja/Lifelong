@@ -31,17 +31,15 @@ export default function LoginForm() {
       return;
     }
 
-
     // Here you would typically call your authentication function
     console.log("Login attempt with:", { username, password });
 
     var responseStatus;
-    fetch(`${import.meta.env.VITE_SERVER_IP_AND_PORT}/login`, {
+    fetch(`http://localhost:3000/login`, {
       method: "post",
       body: JSON.stringify({ username: username, password: password }),
       headers: {
         "Content-Type": "application/json",
-
       }, // Content-Type is in quotes because it has a '-'
     })
       .then((response) => {

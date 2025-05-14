@@ -34,7 +34,7 @@ export default function UserBioForm() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const bioResponse = await fetch(`${import.meta.env.VITE_SERVER_IP_AND_PORT}/bio`, {
+        const bioResponse = await fetch(`http://localhost:3000/bio`, {
           headers: {
             token: localStorage.getItem("token"),
           },
@@ -52,7 +52,7 @@ export default function UserBioForm() {
         setBio(bioData.bio || "");
 
         const metaDataResponse = await fetch(
-          `${import.meta.env.VITE_SERVER_IP_AND_PORT}/user-metadata`,
+          `http://localhost:3000/user-metadata`,
           {
             headers: {
               token: localStorage.getItem("token"),
@@ -114,7 +114,7 @@ export default function UserBioForm() {
 
     if (isBioComplete) {
       console.log("Patch started");
-      fetch(`${import.meta.env.VITE_SERVER_IP_AND_PORT}/bio`, {
+      fetch(`http://localhost:3000/bio`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -138,7 +138,7 @@ export default function UserBioForm() {
         });
     } else {
       console.log("starting post");
-      fetch(`${import.meta.env.VITE_SERVER_IP_AND_PORT}/bio`, {
+      fetch(`http://localhost:3000/bio`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

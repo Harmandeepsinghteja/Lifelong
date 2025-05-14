@@ -1,9 +1,13 @@
 import express from "express";
 import jwt from "jsonwebtoken";
-import bcrypt from 'bcrypt';
+import bcrypt from "bcrypt";
 
 import { db } from "../config/databaseConnection.js";
-import { TOKEN_SECRET_KEY, ADMIN_USERNAME, ADMIN_PASSWORD } from "../config/environmentVariables.js";
+import {
+  TOKEN_SECRET_KEY,
+  ADMIN_USERNAME,
+  ADMIN_PASSWORD,
+} from "../config/environmentVariables.js";
 
 export const registerRouter = express.Router();
 export const loginRouter = express.Router();
@@ -34,8 +38,7 @@ const verifyRegistration = (req, res, next) => {
   });
 };
 
-
-registerRouter.post('/', verifyRegistration, async (req, res, next) => {
+registerRouter.post("/", verifyRegistration, async (req, res, next) => {
   try {
     const hashedPassword = await bcrypt.hash(req.body.password, saltRounds);
     const sql = `INSERT INTO users (username, password)
@@ -51,24 +54,27 @@ registerRouter.post('/', verifyRegistration, async (req, res, next) => {
   }
 });
 
-loginRouter.post('/', async (req, res, next) => {
+loginRouter.post("/", async (req, res, next) => {
+  console.log(req.body.username);
   try {
     const sql = `SELECT password FROM users WHERE username = ?`;
     db.query(sql, [req.body.username], async (err, results) => {
       if (err) return res.status(500).json(`Server side error: ${err}`);
-      if (results.length === 0) return res.status(404).json('User not found');
+      if (results.length === 0) return res.status(404).json("User not found");
 
       const hashedPassword = results[0].password;
       const match = await bcrypt.compare(req.body.password, hashedPassword);
       if (match) {
-        const token = jwt.sign({ username: req.body.username }, TOKEN_SECRET_KEY);
+        const token = jwt.sign(
+          { username: req.body.username },
+          TOKEN_SECRET_KEY
+        );
         res.status(200).json({ token: token });
       } else {
-        res.status(401).json('Invalid password');
+        res.status(401).json("Invalid password");
       }
     });
-  }
-  catch (err) {
+  } catch (err) {
     res.status(500).json(`Server side error: ${err}`);
   }
 });
@@ -77,7 +83,7 @@ loginRouter.post('/', async (req, res, next) => {
 // Input: Username and password (attached to request body)
 // Output: 200 OK status, and the response will contain the token.
 // Alternate Output: Some other status like 404 or 500, and the response will contain the error message.
-adminLoginRouter.post('/', (req, res, next) => {
+adminLoginRouter.post("/", (req, res, next) => {
   if (
     req.body.username === ADMIN_USERNAME &&
     req.body.password === ADMIN_PASSWORD

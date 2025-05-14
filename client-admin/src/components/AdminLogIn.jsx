@@ -32,7 +32,7 @@ export default function AdminLogIn() {
     console.log("Login attempt with:", { adminUsername, password });
 
     var responseStatus;
-    fetch(`${import.meta.env.VITE_SERVER_IP_AND_PORT}/admin-login`, {
+    fetch(`http://localhost:3000/admin-login`, {
       method: "post",
       body: JSON.stringify({
         username: adminUsername,
